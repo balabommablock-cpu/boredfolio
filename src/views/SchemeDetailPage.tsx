@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { cn, formatINR, formatNAV, formatAUM, formatPercent, formatDate, BRAND_COLORS } from "@/lib/utils";
+import { getFundData, getFundPeers, getFundYearReturns } from "@/lib/fundMockData";
 import {
-  MOCK_SCHEME_DETAIL, MOCK_STAFF_PICK_TAKES, MOCK_PEERS, MOCK_YEAR_RETURNS,
   generateNAVData, generateRollingReturns, generateDrawdownData,
 } from "@/lib/mockData";
 
@@ -45,13 +45,14 @@ import { RollingReturnChart } from "@/components/charts/AdvancedCharts";
  * Tabs: Overview | Returns | Holdings | Risk | Manager | Costs | Verdict
  */
 
-const scheme = MOCK_SCHEME_DETAIL;
-
-export default function SchemeDetailPage() {
+export default function SchemeDetailPage({ slug = "ppfas-flexi-cap" }: { slug?: string }) {
+  const scheme = useMemo(() => getFundData(slug), [slug]);
+  const peers = useMemo(() => getFundPeers(slug), [slug]);
+  const yearReturns = useMemo(() => getFundYearReturns(slug), [slug]);
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Generate chart data
-  const navData = useMemo(() => generateNAVData(365 * 3, 45), []);
+  // Generate chart data seeded by NAV value for consistency per fund
+  const navData = useMemo(() => generateNAVData(365 * 3, scheme.nav?.current ?? 45), [scheme.nav?.current]);
   const rollingData = useMemo(() => generateRollingReturns(), []);
   const drawdownData = useMemo(() => generateDrawdownData(), []);
 
@@ -75,7 +76,7 @@ export default function SchemeDetailPage() {
           breadcrumbs={[
             { label: "Home", href: "/" },
             { label: "Explore", href: "/explore" },
-            { label: "Flexi Cap", href: "/category/flexi-cap" },
+            { label: scheme.category!, href: `/category/${scheme.category!.toLowerCase().replace(/\s+/g, "-")}` },
             { label: scheme.shortName || scheme.name! },
           ]}
           title={scheme.name!}
@@ -228,7 +229,7 @@ export default function SchemeDetailPage() {
             <Card padding="lg">
               <CardHeader title="Calendar Year Returns" label="Annual" />
               <div className="mt-4">
-                <YearReturnsChart data={MOCK_YEAR_RETURNS} />
+                <YearReturnsChart data={yearReturns} />
               </div>
             </Card>
 
@@ -386,9 +387,9 @@ export default function SchemeDetailPage() {
                       render: (v) => <span className="font-mono text-xs">{v.toFixed(2)}</span>
                     },
                   ]}
-                  data={MOCK_PEERS}
+                  data={peers}
                   keyField="id"
-                  highlightRow={(row) => row.id === "ppfas-flexi"}
+                  highlightRow={(row) => row.id === scheme.id}
                   compact
                 />
               </div>

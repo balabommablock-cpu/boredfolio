@@ -33,7 +33,7 @@ export default function FundPage({ params }: Props) {
           url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://boredfolio.com"}/fund/${params.slug}`,
         })}
       />
-      <SchemeDetailPage />
+      <SchemeDetailPage slug={params.slug} />
     </>
   );
 }
