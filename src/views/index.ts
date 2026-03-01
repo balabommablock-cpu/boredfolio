@@ -1,0 +1,12 @@
+export { default as HomePage } from "./HomePage";
+export { default as SchemeDetailPage } from "./SchemeDetailPage";
+export { default as ExplorePage } from "./ExplorePage";
+export { default as ComparePage } from "./ComparePage";
+export { default as CategoryPage } from "./CategoryPage";
+export { default as AMCPage } from "./AMCPage";
+export { default as SearchPage } from "./SearchPage";
+export { BlogHomePage, ArticlePage } from "./BlogPage";
+export { default as OverlapToolPage } from "./OverlapToolPage";
+export { default as SIPToolsPage } from "./SIPToolsPage";
+export { default as TaxCenterPage } from "./TaxCenterPage";
+export { default as ManagerDirectoryPage } from "./ManagerDirectoryPage";
