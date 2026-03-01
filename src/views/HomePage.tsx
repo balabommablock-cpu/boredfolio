@@ -147,7 +147,7 @@ export default function HomePage() {
           <SectionHeader
             label="Market Snapshot"
             title="Category Performance"
-            subtitle="How different mutual fund categories are performing right now"
+            subtitle="Who's winning. Who's bleeding. Who's pretending."
           />
 
           <CategoryHeatmap />
@@ -258,11 +258,11 @@ export default function HomePage() {
             <div className="mt-6 flex gap-2 max-w-sm mx-auto">
               <input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="the one you check, not the spam one"
                 className="flex-1 h-10 px-4 rounded-md bg-white/10 border border-white/20 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-sage-400 focus:ring-1 focus:ring-sage-400 transition-colors"
               />
               <Button variant="accent" size="md">
-                Subscribe
+                Get Roasts Weekly
               </Button>
             </div>
           </div>

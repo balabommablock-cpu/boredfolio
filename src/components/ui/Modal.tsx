@@ -19,10 +19,10 @@ interface ModalProps {
 }
 
 const sizeStyles = {
-  sm: "max-w-sm",
-  md: "max-w-lg",
-  lg: "max-w-2xl",
-  xl: "max-w-4xl",
+  sm: "max-w-[calc(100vw-2rem)] sm:max-w-sm",
+  md: "max-w-[calc(100vw-2rem)] sm:max-w-lg",
+  lg: "max-w-[calc(100vw-2rem)] sm:max-w-2xl",
+  xl: "max-w-[calc(100vw-2rem)] sm:max-w-4xl",
   full: "max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]",
 };
 
@@ -72,14 +72,14 @@ export function Modal({
           "relative z-10 w-full bg-cream-50 rounded-lg shadow-modal",
           "border border-cream-300",
           "animate-slide-up",
-          "max-h-[85vh] flex flex-col",
+          "max-h-[90vh] sm:max-h-[85vh] flex flex-col",
           sizeStyles[size],
           className
         )}
       >
         {/* Header */}
         {(title || true) && (
-          <div className="flex items-start justify-between p-5 pb-0">
+          <div className="flex items-start justify-between p-4 sm:p-5 pb-0">
             <div>
               {title && (
                 <h2
@@ -106,7 +106,7 @@ export function Modal({
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">{children}</div>
       </div>
     </div>
   );
@@ -163,7 +163,7 @@ export function Drawer({
       <div
         style={{ width }}
         className={cn(
-          "absolute top-0 bottom-0 bg-cream-50",
+          "absolute top-0 bottom-0 bg-cream-50 w-full sm:w-auto max-w-full",
           "border-cream-300 shadow-modal",
           "flex flex-col overflow-hidden",
           side === "right" ? "right-0 border-l" : "left-0 border-r",

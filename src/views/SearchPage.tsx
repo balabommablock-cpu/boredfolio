@@ -90,7 +90,7 @@ export default function SearchPage() {
       <PageLayout variant="narrow">
         {/* Search bar */}
         <div className="py-6">
-          <SearchBar value={query} onChange={setQuery} placeholder="Search funds, AMCs, categories..." size="lg" />
+          <SearchBar value={query} onChange={setQuery} placeholder="Type a fund name. We'll type the truth." size="lg" />
         </div>
 
         {/* Type filters */}
@@ -107,8 +107,8 @@ export default function SearchPage() {
         {/* Results */}
         {Object.keys(grouped).length === 0 ? (
           <EmptyState
-            title="No results found"
-            message={`We couldn't find anything matching "${query}". Try a different search term.`}
+            title="Nothing. Nada. Zilch."
+            message="Even we couldn't find a way to make this look bad. Try another search."
           />
         ) : (
           <div className="space-y-8">
@@ -127,9 +127,9 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Recent Searches */}
+        {/* Previously Stalked */}
         <div className="mt-12 pt-8 border-t border-cream-300">
-          <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.15em] text-ink-400 mb-3">Recent Searches</h3>
+          <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.15em] text-ink-400 mb-3">Previously Stalked</h3>
           <div className="flex items-center gap-2 flex-wrap">
             {["HDFC Mid-Cap", "Small Cap funds", "PPFAS", "ELSS comparison", "Nifty 50 index"].map((s) => (
               <button key={s} onClick={() => setQuery(s)}

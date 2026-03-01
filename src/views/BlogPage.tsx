@@ -144,7 +144,7 @@ export function BlogHomePage() {
 
         {/* Load More */}
         <div className="text-center mt-8">
-          <Button variant="outline" size="md">Load More Articles</Button>
+          <Button variant="outline" size="md">More Uncomfortable Truths</Button>
         </div>
       </PageLayout>
       <GlobalFooter />
@@ -239,15 +239,15 @@ export function ArticlePage() {
           {/* Share */}
           <div className="mt-8 pt-6 border-t border-cream-300 flex items-center gap-3">
             <span className="text-xs text-ink-400">Share this roast:</span>
-            <Button variant="ghost" size="sm">Twitter</Button>
-            <Button variant="ghost" size="sm">LinkedIn</Button>
-            <Button variant="ghost" size="sm">WhatsApp</Button>
-            <Button variant="ghost" size="sm">Copy Link</Button>
+            <Button variant="ghost" size="sm">Roast on X</Button>
+            <Button variant="ghost" size="sm">Post on LinkedIn</Button>
+            <Button variant="ghost" size="sm">Forward the pain</Button>
+            <Button variant="ghost" size="sm">Steal this link</Button>
           </div>
 
           {/* Related Articles */}
           <div className="mt-12 pt-8 border-t border-cream-300">
-            <h3 className="font-serif text-lg text-ink-900 mb-4">More from the Blog</h3>
+            <h3 className="font-serif text-lg text-ink-900 mb-4">More Bodies to Examine</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {ALL_ARTICLES.filter((a) => a.id !== article!.id).slice(0, 2).map((a) => (
                 <Card key={a.id} hover padding="sm" onClick={() => {}}>

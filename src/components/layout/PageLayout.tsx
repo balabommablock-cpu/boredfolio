@@ -120,7 +120,7 @@ export function MobileBottomNav({ currentPath = "", className }: MobileBottomNav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-40",
         "bg-cream-50/95 backdrop-blur-sm border-t border-cream-300",
-        "md:hidden safe-area-pb",
+        "md:hidden safe-area-bottom",
         className
       )}
     >

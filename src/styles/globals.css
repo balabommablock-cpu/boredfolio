@@ -112,20 +112,6 @@
     @apply font-serif text-ink-900 leading-tight tracking-tight;
   }
 
-  /* ── Truncate multiline ── */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
   /* ── Skeleton loading (cream gradient) ── */
   .skeleton {
     @apply bg-gradient-to-r from-cream-100 via-cream-200 to-cream-100 
@@ -220,6 +206,14 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* ── Safe area padding for iOS home indicator ── */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-area-bottom {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 

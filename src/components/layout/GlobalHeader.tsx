@@ -195,7 +195,7 @@ export function GlobalHeader({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "block px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                  "block px-3 py-3 rounded-md text-sm font-medium transition-colors min-h-[44px] flex items-center",
                   currentPath.startsWith(item.href)
                     ? "text-sage-700 bg-sage-50"
                     : "text-ink-700 hover:bg-cream-200"
@@ -205,10 +205,10 @@ export function GlobalHeader({
               </a>
             ))}
             <div className="border-t border-cream-300 pt-2 mt-2">
-              <a href="/watchlist" className="block px-3 py-2.5 rounded-md text-sm text-ink-700 hover:bg-cream-200">
+              <a href="/watchlist" className="block px-3 py-3 rounded-md text-sm text-ink-700 hover:bg-cream-200 min-h-[44px] flex items-center">
                 Watchlist
               </a>
-              <a href="/portfolio" className="block px-3 py-2.5 rounded-md text-sm text-ink-700 hover:bg-cream-200">
+              <a href="/portfolio" className="block px-3 py-3 rounded-md text-sm text-ink-700 hover:bg-cream-200 min-h-[44px] flex items-center">
                 Portfolio
               </a>
             </div>

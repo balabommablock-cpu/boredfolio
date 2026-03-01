@@ -59,8 +59,8 @@ export default function TaxCenterPage() {
       <PageLayout variant="narrow">
         <PageHeader
           breadcrumbs={[{ label: "Home", href: "/" }, { label: "Tools" }, { label: "Tax Center" }]}
-          title="Mutual Fund Tax Center"
-          subtitle="Everything you need to know about mutual fund taxation. Updated for FY 2025-26."
+          title="The Tax Autopsy"
+          subtitle="How much the government takes. Updated for FY 2025-26."
         />
         <Tabs tabs={tabs} activeTab={tab} onChange={setTab} variant="underline" className="mb-8" />
 

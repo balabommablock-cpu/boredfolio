@@ -73,7 +73,7 @@ export default function ComparePage() {
         <PageHeader
           breadcrumbs={[{ label: "Home", href: "/" }, { label: "Compare" }]}
           title="Fund Comparison"
-          subtitle={`Comparing ${FUNDS.length} funds side-by-side`}
+          subtitle="Three funds enter. One survives."
           actions={<Button variant="outline" size="sm">+ Add Fund</Button>}
         />
 
@@ -193,7 +193,7 @@ export default function ComparePage() {
             </div>
             <div className="mt-6 p-4 bg-cream-50 rounded-lg border border-cream-200">
               <p className="text-sm text-ink-700 leading-relaxed">
-                <span className="font-serif font-semibold">In plain English:</span> {FUNDS[0].shortName} takes less risk while generating more return per unit of risk. But its max drawdown of {FUNDS[0].risk.maxDD}% is still a significant hole to climb out of.
+                <span className="font-serif font-semibold">Translation for humans:</span> {FUNDS[0].shortName} takes less risk while generating more return per unit of risk. But its max drawdown of {FUNDS[0].risk.maxDD}% is still a significant hole to climb out of.
               </p>
             </div>
           </Card>

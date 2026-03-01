@@ -95,7 +95,7 @@ export function VerdictBadge({
   showEmoji?: boolean;
   className?: string;
 }) {
-  const config = verdictConfig[verdict];
+  const config = verdictConfig[verdict] ?? verdictConfig.hold;
   return (
     <Badge variant={config.variant} size="md" className={className}>
       {showEmoji && <span className="not-italic">{config.emoji}</span>}
@@ -121,7 +121,7 @@ export function NFOVerdictBadge({
   verdict: NFOVerdictType;
   className?: string;
 }) {
-  const config = nfoVerdictConfig[verdict];
+  const config = nfoVerdictConfig[verdict] ?? nfoVerdictConfig.wait;
   return (
     <Badge variant={config.variant} size="md" className={className}>
       {config.label}

@@ -71,8 +71,8 @@ export default function SIPToolsPage() {
       <PageLayout variant="narrow">
         <PageHeader
           breadcrumbs={[{ label: "Home", href: "/" }, { label: "Tools" }, { label: "SIP Tools" }]}
-          title="SIP Tools"
-          subtitle="How much will your boring SIP actually make? Let's run the numbers."
+          title="The Money Math"
+          subtitle="How much will your boring SIP actually make? Let's do the damage report."
         />
         <Tabs tabs={tabs} activeTab={tab} onChange={setTab} variant="underline" className="mb-8" />
         <TabContent activeTab={tab} tabId="sip"><SIPCalc /></TabContent>
@@ -138,7 +138,7 @@ function SIPCalc() {
 
   return (
     <Card padding="lg">
-      <CardHeader title="SIP Calculator" subtitle="Monthly investment → future value" />
+      <CardHeader title="SIP Calculator" subtitle="Input hope, output math." />
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <SliderInput label="Monthly SIP" value={monthly} onChange={setMonthly} min={500} max={100000} step={500} unit="₹/mo" />
@@ -146,7 +146,7 @@ function SIPCalc() {
           <SliderInput label="Expected Return" value={rate} onChange={setRate} min={4} max={25} step={0.5} unit="% p.a." helpText="Equity: 12-15% · Debt: 6-8% · Index: 10-13%" />
         </div>
         <div>
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
             <StatCard label="Invested" value={formatINR(result.invested)} />
             <StatCard label="Returns" value={formatINR(result.returns)} trend="up" />
             <StatCard label="Future Value" value={formatINR(result.future)} />
@@ -184,14 +184,14 @@ function StepUpCalc() {
           <SliderInput label="Expected Return" value={rate} onChange={setRate} min={4} max={25} step={0.5} unit="% p.a." />
         </div>
         <div>
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             <StatCard label="With Step-Up" value={formatINR(withStepUp.future)} trend="up" subtext={`Invested: ${formatINR(withStepUp.invested)}`} />
             <StatCard label="Without Step-Up" value={formatINR(withoutStepUp.future)} subtext={`Invested: ${formatINR(withoutStepUp.invested)}`} />
           </div>
           <ResultBar invested={withStepUp.invested} returns={withStepUp.returns} label={`With ${stepUp}% annual step-up`} />
           <ResultBar invested={withoutStepUp.invested} returns={withoutStepUp.returns} label="Flat SIP (no step-up)" />
           <p className="text-sm text-ink-600 mt-4 p-3 bg-mustard-50 rounded-md">
-            <span className="font-semibold text-mustard-700">Power of step-up:</span> A {stepUp}% annual increase
+            <span className="font-semibold text-mustard-700">The step-up effect:</span> A {stepUp}% annual increase
             adds <span className="font-semibold">{formatINR(diff)}</span> extra over {years} years.
             Your last year SIP will be {formatINR(Math.round(monthly * Math.pow(1 + stepUp / 100, years - 1)))}/mo.
           </p>
@@ -220,7 +220,7 @@ function LumpsumVsSIP() {
           <SliderInput label="Expected Return" value={rate} onChange={setRate} min={4} max={25} step={0.5} unit="% p.a." />
         </div>
         <div>
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             <div className="p-4 bg-sage-50 border border-sage-200 rounded-lg text-center">
               <p className="text-2xs uppercase tracking-wider text-sage-600 font-semibold">Lumpsum</p>
               <p className="font-mono text-xl font-semibold text-ink-900 mt-1">{formatINR(lumpsum)}</p>
@@ -263,7 +263,7 @@ function SWPCalc() {
           <SliderInput label="Expected Return" value={rate} onChange={setRate} min={4} max={15} step={0.5} unit="% p.a." helpText="Return on remaining corpus (hybrid fund: 8-10%)" />
         </div>
         <div>
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             <StatCard label="Money Lasts" value={`${years}y ${months}m`} subtext={result.months >= 360 ? "You're golden ✓" : result.months >= 240 ? "Comfortable" : "Consider lower withdrawal"} />
             <StatCard label="Total Withdrawn" value={formatINR(result.totalWithdrawn)} subtext={`${formatINR(monthly)}/mo × ${result.months} months`} />
           </div>

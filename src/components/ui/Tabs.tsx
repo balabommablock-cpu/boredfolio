@@ -35,13 +35,13 @@ export function Tabs({
 }: TabsProps) {
   if (variant === "pills") {
     return (
-      <div className={cn("flex flex-wrap gap-2", className)}>
+      <div className={cn("flex gap-2 overflow-x-auto scrollbar-none pb-1", className)}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "font-sans font-medium rounded-md transition-all duration-150",
+              "shrink-0 font-sans font-medium rounded-md transition-all duration-150",
               "focus-ring whitespace-nowrap",
               size === "sm" ? "text-xs px-2.5 py-1.5" : "text-sm px-3.5 py-2",
               activeTab === tab.id
@@ -72,6 +72,7 @@ export function Tabs({
       <div
         className={cn(
           "inline-flex rounded-lg bg-cream-200 p-0.5 border border-cream-300",
+          "overflow-x-auto scrollbar-none max-w-full",
           className
         )}
       >
@@ -80,7 +81,7 @@ export function Tabs({
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "font-sans font-medium rounded-md transition-all duration-150",
+              "shrink-0 font-sans font-medium rounded-md transition-all duration-150",
               "focus-ring whitespace-nowrap",
               size === "sm" ? "text-xs px-3 py-1.5" : "text-sm px-4 py-2",
               activeTab === tab.id

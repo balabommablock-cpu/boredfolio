@@ -277,7 +277,7 @@ export default function OverlapToolPage() {
         {/* ═══ Suggestions ═══ */}
         {highOverlapPairs.length > 0 && (
           <Card padding="lg" className="mb-8">
-            <CardHeader title="What You Could Do" label="Suggestions" />
+            <CardHeader title="The Fix" label="Suggestions" />
             <div className="mt-4 space-y-3">
               {highOverlapPairs.sort((a, b) => b.value - a.value).slice(0, 3).map((pair, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 bg-cream-50 rounded-md">
@@ -285,7 +285,7 @@ export default function OverlapToolPage() {
                   <p className="text-sm text-ink-700">
                     <span className="font-medium">{pair.fund1}</span> and <span className="font-medium">{pair.fund2}</span> overlap by{" "}
                     <span className="font-semibold">{pair.value}%</span>.
-                    Consider keeping one and redirecting the SIP to a fund in a different category.
+                    Pick one. Ditch the other. Redirect that SIP somewhere actually different.
                   </p>
                 </div>
               ))}

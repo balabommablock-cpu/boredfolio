@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/compare"], // compare is session-based, no SEO value
+        disallow: ["/api/"],
       },
     ],
     sitemap: `${process.env.NEXT_PUBLIC_SITE_URL || "https://boredfolio.com"}/sitemap.xml`,

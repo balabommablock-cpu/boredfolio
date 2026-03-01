@@ -85,16 +85,16 @@ export default function SchemeDetailPage() {
               <CategoryBadge category={scheme.category!} />
               <PlanBadge plan={scheme.plan!} />
               <RiskOMeter level={scheme.riskLevel!} variant="inline" />
-              <VerdictBadge verdict={scheme.verdict!} />
+              <VerdictBadge verdict={scheme.verdict?.rating!} />
             </>
           }
           actions={
             <>
               <Button variant="outline" size="sm" icon={<BookmarkIcon />}>
-                Watchlist
+                Stalk This Fund
               </Button>
               <Button variant="primary" size="sm">
-                Compare
+                Pit Against Others
               </Button>
             </>
           }
@@ -334,12 +334,12 @@ export default function SchemeDetailPage() {
               <Card padding="lg">
                 <CardHeader title="Risk Metrics" />
                 <div className="mt-3">
-                  <MetricRow label={<><JargonTooltip term="Sharpe Ratio" explanation="Return per unit of risk. Higher = better risk-adjusted return.">Sharpe (3Y)</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.sharpe["3Y"]}</span>} />
-                  <MetricRow label={<><JargonTooltip term="Alpha" explanation="Excess return vs benchmark. Positive = fund adds value.">Alpha (3Y)</JargonTooltip></>} value={<ReturnValue value={scheme.riskMetrics!.alpha["3Y"]} size="sm" />} />
-                  <MetricRow label={<><JargonTooltip term="Beta" explanation="Sensitivity to market. <1 = less volatile than market.">Beta</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.beta}</span>} />
+                  <MetricRow label={<><JargonTooltip term="Sharpe Ratio" explanation="Risk-adjusted returns. Did the rollercoaster actually go anywhere?">Sharpe (3Y)</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.sharpe["3Y"]}</span>} />
+                  <MetricRow label={<><JargonTooltip term="Alpha" explanation="Excess return vs benchmark. Positive = the manager earns their paycheck.">Alpha (3Y)</JargonTooltip></>} value={<ReturnValue value={scheme.riskMetrics!.alpha["3Y"]} size="sm" />} />
+                  <MetricRow label={<><JargonTooltip term="Beta" explanation="How much this fund panics when the market panics. <1 = calmer.">Beta</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.beta}</span>} />
                   <MetricRow label="Std Deviation (3Y)" value={<span className="font-mono">{scheme.riskMetrics!.standardDeviation["3Y"]}%</span>} />
-                  <MetricRow label={<><JargonTooltip term="Upside Capture" explanation="How much of the market's gains the fund captures. 100% = fully.">Upside Capture</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.upsideCapture}%</span>} />
-                  <MetricRow label={<><JargonTooltip term="Downside Capture" explanation="How much of the market's losses the fund takes. Lower = better protection.">Downside Capture</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.downsideCapture}%</span>} />
+                  <MetricRow label={<><JargonTooltip term="Upside Capture" explanation="Does it keep up when the market goes up? 100% = fully.">Upside Capture</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.upsideCapture}%</span>} />
+                  <MetricRow label={<><JargonTooltip term="Downside Capture" explanation="Does it bleed as much as the market? Lower = tougher.">Downside Capture</JargonTooltip></>} value={<span className="font-mono">{scheme.riskMetrics!.downsideCapture}%</span>} />
                 </div>
               </Card>
             </div>

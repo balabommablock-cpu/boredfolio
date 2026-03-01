@@ -20,7 +20,7 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
-    <nav aria-label="Breadcrumb" className={cn("flex items-center gap-1.5", className)}>
+    <nav aria-label="Breadcrumb" className={cn("flex items-center gap-1.5 overflow-x-auto scrollbar-none", className)}>
       {items.map((item, i) => (
         <React.Fragment key={i}>
           {i > 0 && (
@@ -31,14 +31,14 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
           {item.href && i < items.length - 1 ? (
             <a
               href={item.href}
-              className="text-xs text-ink-400 hover:text-sage-600 transition-colors truncate max-w-[12rem]"
+              className="text-xs text-ink-400 hover:text-sage-600 transition-colors truncate max-w-[8rem] sm:max-w-[12rem] shrink-0"
             >
               {item.label}
             </a>
           ) : (
             <span
               className={cn(
-                "text-xs truncate max-w-[16rem]",
+                "text-xs truncate max-w-[10rem] sm:max-w-[16rem] shrink-0",
                 i === items.length - 1 ? "text-ink-700 font-medium" : "text-ink-400"
               )}
             >
@@ -69,7 +69,7 @@ export function SectionHeader({
     <div className={cn("flex items-end justify-between gap-4 mb-6", className)}>
       <div>
         {label && <span className="label-mustard block mb-1">{label}</span>}
-        <h2 className="font-serif text-2xl text-ink-900 leading-tight">{title}</h2>
+        <h2 className="font-serif text-xl sm:text-2xl text-ink-900 leading-tight">{title}</h2>
         {subtitle && (
           <p className="mt-1 text-sm text-ink-500">{subtitle}</p>
         )}
@@ -98,13 +98,13 @@ export function PageHeader({
   return (
     <div className={cn("pb-6", className)}>
       {breadcrumbs && <Breadcrumb items={breadcrumbs} className="mb-3" />}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          <h1 className="font-serif text-3xl text-ink-900 leading-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl text-ink-900 leading-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1.5 text-md text-ink-500">{subtitle}</p>
+            <p className="mt-1.5 text-sm sm:text-md text-ink-500">{subtitle}</p>
           )}
           {badges && (
             <div className="flex items-center gap-2 mt-3 flex-wrap">

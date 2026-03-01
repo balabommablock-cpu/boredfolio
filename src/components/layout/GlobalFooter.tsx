@@ -64,10 +64,10 @@ export function GlobalFooter({ className }: GlobalFooterProps) {
       </div>
 
       {/* Main footer */}
-      <div className="section py-12">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+      <div className="section py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
           {/* Brand column */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <a href="/" className="inline-flex items-baseline mb-4">
               <span className="font-serif text-2xl text-white tracking-tight">
                 boredfolio

@@ -50,7 +50,7 @@ const MOCK_FUNDS = [
 
 const PREBUILT_SCREENS = [
   { id: "consistent", label: "Consistent Compounders", emoji: "📈", desc: "Beat benchmark in 80%+ rolling periods" },
-  { id: "lowcost", label: "Low-Cost Champions", emoji: "💰", desc: "Lowest TER in each category" },
+  { id: "lowcost", label: "Cheapest That Don't Suck", emoji: "💰", desc: "Lowest TER in each category" },
   { id: "hidden", label: "Hidden Gems", emoji: "💎", desc: "Small AUM, high alpha" },
   { id: "avoid", label: "Avoid These", emoji: "🚩", desc: "High TER, underperform" },
   { id: "manager", label: "New Manager Alert", emoji: "🔄", desc: "Recent manager changes" },
@@ -118,8 +118,8 @@ export default function ExplorePage() {
       <PageLayout>
         <PageHeader
           breadcrumbs={[{ label: "Home", href: "/" }, { label: "Explore" }]}
-          title="Explore Funds"
-          subtitle="Filter, discover, and compare. Or use our pre-built screens."
+          title="The Screener"
+          subtitle="Find something. Roast it. Compare it to something less terrible."
         />
 
         {/* Pre-Built Screens */}
