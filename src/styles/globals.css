@@ -21,6 +21,32 @@
     --max-content-width: 70rem;   /* 1120px */
     --max-narrow-width: 48rem;    /* 768px — articles */
     --section-padding: 5rem;      /* 80px — generous breathing room */
+
+    /* ── Type scale tokens (Phase 15) ── */
+    --font-display: 56px;
+    --font-h1: 36px;
+    --font-h2: 24px;
+    --font-body: 16px;
+    --font-caption: 13px;
+
+    /* ── Opinion colors — separate from data colors ── */
+    --opinion-buy: #4A7C59;
+    --opinion-hold: #B8963E;
+    --opinion-avoid: #C4453C;
+
+    /* ── Data colors ── */
+    --data-positive: #4A7C59;
+    --data-negative: #C4453C;
+  }
+
+  @media (max-width: 768px) {
+    :root {
+      --font-display: 32px;
+      --font-h1: 24px;
+      --font-h2: 20px;
+      --font-body: 15px;
+      --font-caption: 12px;
+    }
   }
 
   html {
@@ -183,6 +209,38 @@
   /* ── Ticker strip animation ── */
   .ticker-strip {
     @apply flex animate-ticker whitespace-nowrap;
+  }
+
+  /* ── Ticker track — hover pauses for readability ── */
+  .ticker-track {
+    display: flex;
+    gap: 48px;
+    white-space: nowrap;
+    animation: ticker 120s linear infinite;
+  }
+  .ticker-track:hover {
+    animation-play-state: paused;
+  }
+  @media (max-width: 768px) {
+    .ticker-track .ticker-item {
+      font-size: 12px;
+    }
+  }
+
+  /* ── Slide-in-right (mobile nav drawer) ── */
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.25s ease-out forwards;
+  }
+
+  /* ── Touch targets — 48px minimum on mobile ── */
+  @media (max-width: 768px) {
+    button, [role="button"], input, select, a.touch-target {
+      min-height: 48px;
+    }
   }
 
   /* ── Hide scrollbar utility ── */

@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 /*
@@ -42,8 +44,9 @@ export function PageLayout({
 /*
  * MOBILE BOTTOM NAV
  * ─────────────────
- * Fixed bottom tab bar for mobile. 5 core destinations.
+ * Fixed bottom tab bar for mobile. 4 live destinations.
  * Shows only on screens < 768px (md breakpoint).
+ * Tools and Portfolio removed — those pages are not live.
  */
 
 interface BottomNavItem {
@@ -79,26 +82,11 @@ const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
     ),
   },
   {
-    label: "Tools",
-    href: "/tools/sip-calculator",
+    label: "Compare",
+    href: "/compare",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="4" y="2" width="16" height="20" rx="2" />
-        <line x1="8" y1="10" x2="16" y2="10" />
-        <line x1="8" y1="14" x2="16" y2="14" />
-        <line x1="8" y1="18" x2="12" y2="18" />
-        <line x1="8" y1="6" x2="16" y2="6" />
-      </svg>
-    ),
-  },
-  {
-    label: "Portfolio",
-    href: "/portfolio",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-        <path d="M18 12a2 2 0 1 0 0 4h4v-4h-4z" />
+        <path d="M18 20V10M12 20V4M6 20v-6" />
       </svg>
     ),
   },
@@ -153,48 +141,54 @@ export function MobileBottomNav({ currentPath = "", className }: MobileBottomNav
 /*
  * TICKER STRIP
  * ────────────
- * Scrolling one-liners on the home page.
- * Boredfolio truths, market quips, uncomfortable facts.
- * Charcoal background — same as Market Pulse.
+ * Scrolling one-liners. Boredfolio truths. Uncomfortable facts.
+ * Shuffled on every page load so it feels fresh.
+ * Hover to pause — lets users actually read the lines.
+ * 120-second loop duration so it doesn't feel rushed.
  */
 
 interface TickerStripProps {
   messages: string[];
-  speed?: "slow" | "normal" | "fast";
   className?: string;
 }
 
-export function TickerStrip({
-  messages,
-  speed = "normal",
-  className,
-}: TickerStripProps) {
-  const speedDuration = {
-    slow: "60s",
-    normal: "40s",
-    fast: "25s",
-  };
+/** Fisher-Yates shuffle — returns a new array, never mutates input */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export function TickerStrip({ messages, className }: TickerStripProps) {
+  // Shuffle once on mount — never on re-render
+  const [shuffled, setShuffled] = useState<string[]>([]);
+
+  useEffect(() => {
+    setShuffled(shuffle(messages));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Use un-shuffled list on first render (SSR) to avoid hydration mismatch
+  // Then swap to shuffled once mounted
+  const display = shuffled.length > 0 ? shuffled : messages;
 
   // Duplicate for seamless loop
-  const allMessages = [...messages, ...messages];
+  const all = useMemo(() => [...display, ...display], [display]);
 
   return (
     <div
       className={cn(
-        "bg-ink-900 overflow-hidden border-b border-ink-800 h-8 flex items-center",
+        "bg-ink-900 overflow-hidden border-b border-ink-800 h-9 flex items-center",
         className
       )}
     >
-      <div
-        className="flex items-center gap-12 whitespace-nowrap"
-        style={{
-          animation: `ticker ${speedDuration[speed]} linear infinite`,
-        }}
-      >
-        {allMessages.map((msg, i) => (
-          <span key={i} className="flex items-center gap-3 text-xs">
-            <span className="text-mustard-400">●</span>
-            <span className="text-white/60">{msg}</span>
+      <div className="ticker-track items-center">
+        {all.map((msg, i) => (
+          <span key={i} className="ticker-item flex items-center gap-3 text-[14px]">
+            <span className="text-mustard-400 text-xs">●</span>
+            <span className="text-white/65">{msg}</span>
           </span>
         ))}
       </div>

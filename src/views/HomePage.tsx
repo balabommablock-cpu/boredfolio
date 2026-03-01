@@ -5,17 +5,12 @@ import { cn } from "@/lib/utils";
 import {
   TICKER_MESSAGES, HOMEPAGE_STATS, DICTIONARY_TERMS,
   FUND_AUTOPSIES, COLLECTIONS, BLOG_ARTICLES,
-  signalColor,
 } from "@/lib/editorialData";
-import { MOCK_INDICES } from "@/lib/mockData";
 
 // Layout
 import { GlobalHeader } from "@/components/layout/GlobalHeader";
 import { GlobalFooter } from "@/components/layout/GlobalFooter";
 import { MobileBottomNav, TickerStrip } from "@/components/layout/PageLayout";
-
-// Domain
-import { MarketPulseStrip } from "@/components/domain/MarketPulseStrip";
 
 // UI
 import { Badge } from "@/components/ui/Badge";
@@ -27,24 +22,23 @@ import { Badge } from "@/components/ui/Badge";
  * "Wendy's Twitter meets expense ratios."
  *
  * Sections:
- *   1. Ticker Strip (scrolling truths)
- *   2. Market Pulse Banner
- *   3. Hero (dramatic headline + typewriter search)
- *   4. Stats Strip (charcoal — the uncomfortable numbers)
- *   5. The Dictionary (accordion preview)
- *   6. Fund Autopsies (dark — with nicknames)
- *   7. Curated Collections
- *   8. Free Tool CTA (sage banner)
- *   9. Blog (featured + sidebar)
- *  10. Newsletter (mustard strip)
+ *   1. Ticker Strip (30 snarky truths, shuffled on load)
+ *   2. Hero (dramatic headline + typewriter search — NO label above)
+ *   3. Stats Strip (charcoal — the uncomfortable numbers)
+ *   4. The Dictionary (accordion preview, correct term count)
+ *   5. Fund Autopsies (dark — with nicknames + View All button)
+ *   6. Curated Collections (max 80-char descriptions)
+ *   7. Blog (featured + sidebar, no stale dates)
+ *   8. Newsletter (wired with validation + success state)
  */
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-cream-100 flex flex-col">
       <GlobalHeader currentPath="/" />
-      <TickerStrip messages={TICKER_MESSAGES} speed="normal" />
-      <MarketPulseStrip indices={MOCK_INDICES} />
+
+      {/* Phase 2: Text ticker ONLY — market data ticker removed */}
+      <TickerStrip messages={TICKER_MESSAGES} />
 
       {/* ═══ HERO ═══ */}
       <HeroSection />
@@ -61,9 +55,6 @@ export default function HomePage() {
       {/* ═══ CURATED COLLECTIONS ═══ */}
       <CollectionsSection />
 
-      {/* ═══ FREE TOOL CTA ═══ */}
-      <ToolCTABanner />
-
       {/* ═══ BLOG ═══ */}
       <BlogSection />
 
@@ -78,13 +69,23 @@ export default function HomePage() {
 
 
 /* ═══════════════════════════════════════════
-   HERO SECTION — The first thing anyone sees
+   HERO SECTION — Phase 3
+   No label above h1. Typewriter in search bar.
+   Full paragraph always visible. Mobile responsive.
    ═══════════════════════════════════════════ */
 function HeroSection() {
   const [typed, setTyped] = useState("");
   const query = "Where\u2019s my money actually going?";
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
+    // Small delay so it feels intentional, not broken
+    const delay = setTimeout(() => setStarted(true), 600);
+    return () => clearTimeout(delay);
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
     let i = 0;
     const iv = setInterval(() => {
       if (i <= query.length) {
@@ -93,9 +94,9 @@ function HeroSection() {
       } else {
         clearInterval(iv);
       }
-    }, 55);
+    }, 50);
     return () => clearInterval(iv);
-  }, []);
+  }, [started, query]);
 
   return (
     <section className="bg-cream-100 relative overflow-hidden py-14 sm:py-24 lg:py-28 px-5 sm:px-12">
@@ -108,13 +109,11 @@ function HeroSection() {
       </div>
 
       <div className="max-w-[720px] mx-auto relative z-10">
-        {/* Section label */}
-        <div className="font-sans text-[11px] uppercase tracking-[4px] text-sage-500 font-semibold mb-4">
-          Financial Advice You Didn&rsquo;t Ask For
-        </div>
+        {/* Phase 3.1: "Financial Advice You Didn't Ask For" label REMOVED.
+            The ticker already establishes tone. The label was redundant. */}
 
-        {/* Dramatic headline */}
-        <h1 className="font-serif text-4xl sm:text-5xl lg:text-[72px] leading-[1.05] text-ink-900 font-bold -tracking-[0.5px] mb-6">
+        {/* Dramatic headline — 28px on mobile (Phase 3.4) */}
+        <h1 className="font-serif text-[28px] sm:text-5xl lg:text-[72px] leading-[1.15] sm:leading-[1.05] text-ink-900 font-bold -tracking-[0.5px] mb-8">
           Your mutual fund
           <br />
           has a{" "}
@@ -126,21 +125,21 @@ function HeroSection() {
           <span className="text-sage-500">We&rsquo;ll tell you.</span>
         </h1>
 
-        {/* Body text */}
-        <p className="font-sans text-base sm:text-lg text-ink-500 max-w-[520px] mb-7 sm:mb-10 leading-relaxed">
+        {/* Phase 3.2: Body paragraph — always fully rendered, never typewritten */}
+        <p className="font-sans text-base sm:text-lg text-ink-500 max-w-[520px] mb-6 sm:mb-10 leading-relaxed">
           Every fund in India, stripped naked. Every term, translated to human.
           Every fee they hope you&rsquo;ll never notice.
         </p>
 
         {/* Typewriter search bar */}
         <div className="bg-white rounded-lg p-1 flex max-w-[480px] shadow-[0_2px_24px_rgba(0,0,0,0.04)] border border-cream-300">
-          <div className="flex-1 px-3 sm:px-4 py-3 sm:py-3.5 font-sans text-sm sm:text-[15px] text-ink-300">
-            {typed}
-            <span className="animate-pulse">|</span>
+          <div className="flex-1 px-3 sm:px-4 py-3 sm:py-3.5 font-sans text-sm sm:text-[15px] text-ink-300 min-h-[44px] flex items-center">
+            {typed || <span className="opacity-0">|</span>}
+            {typed && <span className="animate-pulse ml-px">|</span>}
           </div>
           <a
             href="/explore"
-            className="shrink-0 bg-ink-900 text-white font-sans text-[13px] font-semibold px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-md hover:bg-ink-800 transition-colors"
+            className="shrink-0 bg-ink-900 text-white font-sans text-[13px] font-semibold px-4 sm:px-6 rounded-md hover:bg-ink-800 transition-colors flex items-center min-h-[44px] w-full sm:w-auto justify-center mt-1 sm:mt-0"
           >
             Find Out →
           </a>
@@ -152,22 +151,37 @@ function HeroSection() {
 
 
 /* ═══════════════════════════════════════════
-   STATS STRIP — The uncomfortable numbers
+   STATS STRIP — Phase 4
+   Numbers 56px / 40px mobile. Rewritten descriptions.
+   Mobile single column with dividers.
    ═══════════════════════════════════════════ */
 function StatsStrip() {
+  const descriptions = [
+    "You own 5. Can you name what they hold?",
+    "Your money. Leaving without saying goodbye.",
+    "Paying a human to lose to a spreadsheet.",
+  ];
+
   return (
     <section className="bg-ink-900 py-9 sm:py-14 px-5 sm:px-12">
-      <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12">
+      <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-12">
         {HOMEPAGE_STATS.map((stat, i) => (
-          <div key={i} className="text-center">
-            <div className="font-serif text-4xl sm:text-[52px] text-mustard-400 font-bold -tracking-[1px]">
+          <div
+            key={i}
+            className={cn(
+              "text-center py-6 sm:py-0",
+              i < HOMEPAGE_STATS.length - 1 && "border-b border-white/10 sm:border-b-0"
+            )}
+          >
+            {/* 56px desktop, 40px mobile */}
+            <div className="font-serif text-[40px] sm:text-[56px] text-mustard-400 font-bold -tracking-[1px] leading-none">
               {stat.number}
             </div>
-            <div className="font-sans text-[10px] text-white font-bold uppercase tracking-[2.5px] mt-1 mb-1.5">
+            <div className="font-sans text-[10px] text-white font-bold uppercase tracking-[2.5px] mt-2 mb-1.5">
               {stat.label}
             </div>
-            <div className="font-sans text-xs text-white/40 italic">
-              {stat.snark}
+            <div className="font-sans text-[13px] text-white/50 italic">
+              {descriptions[i]}
             </div>
           </div>
         ))}
@@ -178,11 +192,15 @@ function StatsStrip() {
 
 
 /* ═══════════════════════════════════════════
-   DICTIONARY PREVIEW — 40 terms, zero jargon
+   DICTIONARY PREVIEW — Phase 5
+   Correct term count (12). Link to /explore.
+   Accordion: single open, + rotates to ×.
+   Mobile tap targets 48px.
    ═══════════════════════════════════════════ */
 function DictionaryPreview() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const terms = DICTIONARY_TERMS.slice(0, 4);
+  const totalTerms = DICTIONARY_TERMS.length;
 
   const groupColor = (g: string) =>
     g === "TRAPS" ? "ugly" : g === "METRICS" ? "mustard" : "sage";
@@ -197,20 +215,21 @@ function DictionaryPreview() {
               The Dictionary
             </div>
             <h2 className="font-serif text-3xl sm:text-[44px] text-ink-900 font-bold leading-[1.18] -tracking-[0.5px]">
-              40 terms. Zero jargon.
+              {totalTerms} terms. Zero jargon.
               <br />
               <span className="text-sage-500">Maximum discomfort.</span>
             </h2>
           </div>
+          {/* Phase 5.3: Link to /explore renamed */}
           <a
             href="/explore"
             className="font-sans text-[13px] text-sage-500 font-semibold border-b-[1.5px] border-sage-500 pb-0.5 shrink-0 hover:text-sage-600 transition-colors"
           >
-            All {DICTIONARY_TERMS.length} terms →
+            Explore All Funds →
           </a>
         </div>
 
-        {/* Term accordion */}
+        {/* Term accordion — one open at a time, + rotates to × */}
         {terms.map((t, i) => (
           <div
             key={i}
@@ -220,17 +239,19 @@ function DictionaryPreview() {
             )}
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
           >
-            <div className="py-5 sm:py-6">
+            {/* Phase 5.4: 48px min height tap target on mobile */}
+            <div className="py-4 sm:py-6 min-h-[48px]">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 sm:gap-3.5 flex-wrap">
-                  <Badge variant={groupColor(t.group)} size="sm">{t.group}</Badge>
+                  <Badge variant={groupColor(t.group) as any} size="sm">{t.group}</Badge>
                   <span className="font-serif text-lg sm:text-[22px] text-ink-900 font-semibold">
                     {t.term}
                   </span>
                 </div>
+                {/* Phase 5.2: + rotates to × with 200ms transition */}
                 <span
                   className={cn(
-                    "font-sans text-xl text-sage-500 shrink-0 ml-3 transition-transform duration-300",
+                    "font-sans text-xl text-sage-500 shrink-0 ml-3 transition-transform duration-200 w-12 h-12 flex items-center justify-center",
                     openIndex === i && "rotate-45"
                   )}
                 >
@@ -238,7 +259,7 @@ function DictionaryPreview() {
                 </span>
               </div>
 
-              {/* One-liner */}
+              {/* One-liner always visible */}
               <div className="font-sans text-[13px] sm:text-sm text-mustard-500 italic mt-1.5 sm:pl-[90px] font-medium">
                 &ldquo;{t.oneLiner}&rdquo;
               </div>
@@ -259,42 +280,37 @@ function DictionaryPreview() {
 
 
 /* ═══════════════════════════════════════════
-   FUND AUTOPSIES — With the nicknames
+   FUND AUTOPSIES — Phase 6
+   "View All 1,547 Schemes →" button below cards.
+   Header link removed (button replaces it).
+   Mobile single column.
    ═══════════════════════════════════════════ */
 function FundAutopsiesSection() {
   const signalEmoji = (s: string) =>
-    s === "green" ? "\ud83d\udfe2" : s === "red" ? "\ud83d\udd34" : "\ud83d\udfe1";
+    s === "green" ? "🟢" : s === "red" ? "🔴" : "🟡";
 
   return (
     <section className="bg-ink-900 py-12 sm:py-20 px-5 sm:px-12">
       <div className="max-w-[1060px] mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-8 sm:mb-12">
-          <div>
-            <div className="font-sans text-[11px] uppercase tracking-[4px] text-mustard-400 font-semibold mb-4">
-              Fund Autopsies
-            </div>
-            <h2 className="font-serif text-3xl sm:text-[44px] text-white font-bold leading-[1.18] -tracking-[0.5px]">
-              Every fund. Stripped naked.
-              <br />
-              <span className="text-sage-400">Nothing to hide behind.</span>
-            </h2>
+        {/* Header — link REMOVED, replaced by button below cards */}
+        <div className="mb-8 sm:mb-12">
+          <div className="font-sans text-[11px] uppercase tracking-[4px] text-mustard-400 font-semibold mb-4">
+            Fund Autopsies
           </div>
-          <a
-            href="/explore"
-            className="font-sans text-[13px] text-mustard-400 font-semibold border-b-[1.5px] border-mustard-400 pb-0.5 shrink-0 hover:text-mustard-300 transition-colors"
-          >
-            All 1,547 autopsies →
-          </a>
+          <h2 className="font-serif text-3xl sm:text-[44px] text-white font-bold leading-[1.18] -tracking-[0.5px]">
+            Every fund. Stripped naked.
+            <br />
+            <span className="text-sage-400">Nothing to hide behind.</span>
+          </h2>
         </div>
 
-        {/* Fund cards grid */}
+        {/* Fund cards grid — single column on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {FUND_AUTOPSIES.slice(0, 4).map((f, i) => (
             <a
               key={i}
               href={`/fund/${f.name.toLowerCase().replace(/\s+/g, "-")}`}
-              className="block bg-[#222] p-5 sm:p-7 rounded-lg border border-[#333] hover:border-sage-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.2)] group"
+              className="block bg-[#222] p-5 sm:p-7 rounded-lg border border-[#333] hover:border-sage-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.2)] group min-h-[180px]"
             >
               <div className="flex justify-between mb-3.5">
                 <Badge variant="sage" size="sm">{f.category}</Badge>
@@ -315,6 +331,14 @@ function FundAutopsiesSection() {
             </a>
           ))}
         </div>
+
+        {/* Phase 6.1: Full-width View All button below cards */}
+        <a
+          href="/explore"
+          className="mt-8 block w-full text-center py-4 border border-mustard-400 text-mustard-400 font-sans text-base font-semibold rounded hover:bg-mustard-400 hover:text-ink-900 transition-colors duration-200"
+        >
+          View All 1,547 Schemes →
+        </a>
       </div>
     </section>
   );
@@ -322,7 +346,9 @@ function FundAutopsiesSection() {
 
 
 /* ═══════════════════════════════════════════
-   CURATED COLLECTIONS — Not categories. Opinions.
+   CURATED COLLECTIONS — Phase 7
+   Descriptions max 80 chars (updated in editorialData).
+   Mobile single column.
    ═══════════════════════════════════════════ */
 function CollectionsSection() {
   const tagBadgeColor = (tag: string) => {
@@ -356,7 +382,7 @@ function CollectionsSection() {
           </a>
         </div>
 
-        {/* Collection cards */}
+        {/* Collection cards — single column on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {COLLECTIONS.slice(0, 3).map((c, i) => (
             <div
@@ -388,15 +414,14 @@ function CollectionsSection() {
               >
                 {c.name}
               </h4>
+              {/* Phase 7.1: descriptions now max 80 chars — no truncation needed */}
               <p
                 className={cn(
                   "font-sans text-[12.5px] leading-relaxed",
                   i === 0 ? "text-white/50" : "text-ink-500"
                 )}
               >
-                {c.description.length > 90
-                  ? c.description.slice(0, 90) + "..."
-                  : c.description}
+                {c.description}
               </p>
               <div
                 className={cn(
@@ -416,32 +441,9 @@ function CollectionsSection() {
 
 
 /* ═══════════════════════════════════════════
-   FREE TOOL CTA — Commission Calculator tease
-   ═══════════════════════════════════════════ */
-function ToolCTABanner() {
-  return (
-    <section className="bg-sage-500 py-10 sm:py-16 px-5 sm:px-12 text-center">
-      <div className="max-w-[500px] mx-auto">
-        <div className="font-sans text-[11px] uppercase tracking-[4px] text-white/45 font-semibold mb-4">
-          Free Tool
-        </div>
-        <h2 className="font-serif text-2xl sm:text-[36px] text-white font-bold leading-[1.18] -tracking-[0.5px] mb-6">
-          How much is your distributor making off <em className="not-italic">your</em> money?
-        </h2>
-        <a
-          href="/tools/sip-calculator"
-          className="inline-block bg-ink-900 text-white font-sans text-[13.5px] font-semibold px-7 py-3.5 rounded-md hover:bg-ink-800 transition-colors"
-        >
-          Open Commission Calculator →
-        </a>
-      </div>
-    </section>
-  );
-}
-
-
-/* ═══════════════════════════════════════════
-   BLOG — Featured + sidebar layout
+   BLOG — Phase 9
+   No stale dates shown. Featured + sidebar layout.
+   Mobile: all cards stack vertically.
    ═══════════════════════════════════════════ */
 function BlogSection() {
   const featured = BLOG_ARTICLES.find((a) => a.featured);
@@ -475,7 +477,7 @@ function BlogSection() {
           </a>
         </div>
 
-        {/* Featured + sidebar grid */}
+        {/* Featured + sidebar grid — stacked on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-[1.2fr_1fr] gap-3.5 sm:gap-7">
           {/* Featured card (charcoal) */}
           {featured && (
@@ -487,13 +489,14 @@ function BlogSection() {
               <p className="font-sans text-[13px] sm:text-sm text-white/50 leading-[1.75] mb-5">
                 {featured.description}
               </p>
+              {/* Phase 9.1: No date shown */}
               <span className="font-sans text-[13px] text-mustard-400 font-semibold group-hover:text-mustard-300 transition-colors">
                 {featured.readTime} read →
               </span>
             </div>
           )}
 
-          {/* Sidebar articles */}
+          {/* Sidebar articles — no dates */}
           <div className="flex flex-col gap-2.5 sm:gap-3.5">
             {rest.map((a, i) => (
               <div
@@ -518,9 +521,37 @@ function BlogSection() {
 
 
 /* ═══════════════════════════════════════════
-   NEWSLETTER STRIP — Mustard, punchy
+   NEWSLETTER STRIP — Phase 10
+   Wired to Buttondown. HTML5 validation.
+   Success and error states with brand copy.
+   Mobile: stacked column, 100% width inputs.
    ═══════════════════════════════════════════ */
 function NewsletterStrip() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes("@")) {
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+
+    try {
+      // Buttondown embed subscription
+      const formData = new FormData();
+      formData.append("email", email);
+      const res = await fetch(
+        "https://buttondown.com/api/emails/embed-subscribe/boredfolio",
+        { method: "POST", body: formData }
+      );
+      setStatus(res.ok ? "success" : "error");
+    } catch {
+      setStatus("error");
+    }
+  };
+
   return (
     <section className="bg-mustard-400 py-8 sm:py-11 px-5 sm:px-12">
       <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row justify-center items-center gap-5 sm:gap-10">
@@ -532,20 +563,53 @@ function NewsletterStrip() {
             One fund truth, every Tuesday.
           </p>
         </div>
-        <div className="flex gap-2">
-          <input
-            type="email"
-            placeholder="your@email.com"
-            className="w-[180px] sm:w-[210px] px-4 py-3 border-2 border-black/8 bg-white/30 font-sans text-sm rounded-md outline-none placeholder:text-black/35 focus:border-ink-900/20 transition-colors"
-          />
-          <a
-            href="#"
-            className="bg-ink-900 text-white font-sans text-[13.5px] font-semibold px-5 sm:px-7 py-3 rounded-md hover:bg-ink-800 transition-colors shrink-0"
+
+        {status === "success" ? (
+          <div className="bg-ink-900 text-white font-sans text-sm font-semibold px-6 py-4 rounded-md text-center">
+            You&rsquo;re in. First uncomfortable truth arrives Tuesday. ✓
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto"
           >
-            Subscribe
-          </a>
-        </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (status === "error") setStatus("idle");
+              }}
+              placeholder="your@email.com"
+              required
+              className={cn(
+                "w-full sm:w-[210px] px-4 py-3 border-2 bg-white/30 font-sans text-sm rounded-md outline-none placeholder:text-black/35 transition-colors min-h-[48px]",
+                status === "error"
+                  ? "border-red-400 bg-red-50/20"
+                  : "border-black/8 focus:border-ink-900/20"
+              )}
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="bg-ink-900 text-white font-sans text-[13.5px] font-semibold px-5 sm:px-7 py-3 rounded-md hover:bg-ink-800 transition-colors shrink-0 min-h-[48px] disabled:opacity-70"
+            >
+              {status === "loading" ? "Subscribing..." : "Subscribe"}
+            </button>
+          </form>
+        )}
+
+        {status === "error" && (
+          <p className="font-sans text-xs text-ink-800 italic -mt-3 sm:hidden">
+            That email looks broken. Like most large-cap funds.
+          </p>
+        )}
       </div>
+      {status === "error" && (
+        <p className="font-sans text-xs text-ink-800 italic text-center mt-3 hidden sm:block">
+          That email looks broken. Like most large-cap funds.
+        </p>
+      )}
     </section>
   );
 }

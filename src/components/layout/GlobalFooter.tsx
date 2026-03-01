@@ -4,42 +4,21 @@ import { cn } from "@/lib/utils";
 /*
  * GLOBAL FOOTER
  * ─────────────
- * Editorial footer. Charcoal background (the dark bookend).
- * Mandatory SEBI disclaimer. Newsletter signup.
- * "boredfolio. — Boring you into wealth."
+ * Charcoal. Minimal. Only live links.
+ * No duplicate newsletter (it's in the mustard strip above).
+ * Social links removed until real profiles exist.
+ *
+ * Brand voice:
+ * - "Not SEBI registered. Not your advisor. Just better at math than your advisor."
+ * - "Made with ☕ and resentment toward the mutual fund industry."
+ * - "© 2026 Boredfolio. All rights reserved. Unlike your returns."
  */
 
-const FOOTER_LINKS = {
-  "Product": [
-    { label: "Explore Funds", href: "/explore" },
-    { label: "Compare", href: "/compare" },
-    { label: "Screener", href: "/explore" },
-    { label: "Market Dashboard", href: "/market" },
-    { label: "NFO Tracker", href: "/nfo" },
-  ],
-  "Tools": [
-    { label: "SIP Calculator", href: "/tools/sip-calculator" },
-    { label: "SWP Calculator", href: "/tools/swp-calculator" },
-    { label: "Goal Planner", href: "/tools/goal-planner" },
-    { label: "Tax Calculator", href: "/tools/tax-calculator" },
-    { label: "Portfolio Overlap", href: "/tools/overlap" },
-    { label: "Risk Profiler", href: "/tools/risk-profiler" },
-  ],
-  "Learn": [
-    { label: "Blog", href: "/blog" },
-    { label: "Glossary", href: "/glossary" },
-    { label: "Learning Center", href: "/learn" },
-    { label: "Myth Busters", href: "/learn/myths" },
-  ],
-  "Company": [
-    { label: "About & Methodology", href: "/about" },
-    { label: "Contact", href: "/contact" },
-    { label: "Disclaimer", href: "/legal" },
-    { label: "Privacy Policy", href: "/legal" },
-    { label: "Terms of Use", href: "/legal" },
-    { label: "Sitemap", href: "/sitemap" },
-  ],
-};
+const FOOTER_LINKS = [
+  { label: "Explore Funds", href: "/explore" },
+  { label: "Compare", href: "/compare" },
+  { label: "Blog", href: "/blog" },
+];
 
 interface GlobalFooterProps {
   className?: string;
@@ -65,99 +44,54 @@ export function GlobalFooter({ className }: GlobalFooterProps) {
 
       {/* Main footer */}
       <div className="section py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
+        <div className="flex flex-col sm:flex-row items-start gap-8 sm:gap-16">
           {/* Brand column */}
-          <div className="col-span-1 sm:col-span-2 md:col-span-1">
+          <div className="max-w-xs">
             <a href="/" className="inline-flex items-baseline mb-4">
               <span className="font-serif text-2xl text-white tracking-tight">
                 boredfolio
               </span>
               <span className="font-serif text-2xl text-mustard-400">.</span>
             </a>
-            <p className="text-sm text-white/50 leading-relaxed mb-4 max-w-xs">
-              India&rsquo;s most honest mutual fund platform. We strip funds naked so you can invest with your eyes open.
+            <p className="text-sm text-white/50 leading-relaxed mb-3">
+              We show you the numbers your fund house buries in page 47 of the factsheet.
             </p>
             <p className="text-xs italic text-white/30">
-              Boring you into wealth.
+              Made with ☕ and resentment toward the mutual fund industry.
             </p>
-
-            {/* Social */}
-            <div className="flex items-center gap-3 mt-5">
-              <SocialLink href="#" label="Twitter" icon="X" />
-              <SocialLink href="#" label="LinkedIn" icon="in" />
-              <SocialLink href="#" label="YouTube" icon="▶" />
-            </div>
           </div>
 
-          {/* Link columns */}
-          {Object.entries(FOOTER_LINKS).map(([section, links]) => (
-            <div key={section}>
-              <h3 className="font-sans text-2xs font-semibold uppercase tracking-[0.2em] text-white/40 mb-4">
-                {section}
-              </h3>
-              <ul className="space-y-2.5">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-white/60 hover:text-white transition-colors"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Newsletter */}
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-serif text-lg text-white">
-                Get the unfiltered truth. Weekly.
-              </h3>
-              <p className="text-sm text-white/40 mt-0.5">
-                No spam. No affiliate links. Just uncomfortable honesty about your money.
-              </p>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="flex-1 sm:w-64 h-10 px-4 rounded-md bg-white/10 border border-white/20 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500 transition-colors"
-              />
-              <button className="h-10 px-5 rounded-md bg-sage-500 text-white text-sm font-medium hover:bg-sage-600 transition-colors shrink-0">
-                Subscribe
-              </button>
-            </div>
+          {/* Links — single column, only live pages */}
+          <div>
+            <h3 className="font-sans text-2xs font-semibold uppercase tracking-[0.2em] text-white/40 mb-4">
+              Navigate
+            </h3>
+            <ul className="space-y-2.5">
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-white/60 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* Copyright bar */}
+      {/* Copyright bar — with brand microcopy */}
       <div className="border-t border-white/10">
-        <div className="section py-4 flex items-center justify-between text-2xs text-white/30">
-          <span>&copy; {new Date().getFullYear()} Boredfolio. All rights reserved.</span>
-          <span className="hidden sm:block">
-            Data sources: AMFI, NSE, BSE, SEBI, AMC Factsheets
+        <div className="section py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs text-white/30">
+          <span>&copy; {new Date().getFullYear()} Boredfolio. All rights reserved. Unlike your returns.</span>
+          <span className="hidden sm:block italic">
+            Not SEBI registered. Not your advisor. Just better at math than your advisor.
           </span>
         </div>
       </div>
     </footer>
-  );
-}
-
-function SocialLink({ href, label, icon }: { href: string; label: string; icon: string }) {
-  return (
-    <a
-      href={href}
-      aria-label={label}
-      className="h-8 w-8 rounded-md bg-white/10 flex items-center justify-center text-xs font-bold text-white/60 hover:bg-white/20 hover:text-white transition-colors"
-    >
-      {icon}
-    </a>
   );
 }
 

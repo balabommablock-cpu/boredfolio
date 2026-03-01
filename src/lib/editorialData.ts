@@ -8,7 +8,7 @@
  * "Wendy's Twitter meets expense ratios."
  */
 
-/* ── Ticker Messages (Scrolling Truths) ── */
+/* ── Ticker Messages (Scrolling Truths) — 30 lines, shuffled on load ── */
 export const TICKER_MESSAGES = [
   "Your SIP isn\u2019t a personality trait",
   "Expense ratio 2%? That\u2019s not a fee, that\u2019s a heist",
@@ -18,6 +18,28 @@ export const TICKER_MESSAGES = [
   "67% of large-cap funds can\u2019t beat the Nifty",
   "Direct plan exists. Distributors hope you never find out",
   "Past performance guarantees past commissions",
+  "Your fund manager takes a 2.5% cut even when he loses your money",
+  "\u201cLong term\u201d is not a strategy. It\u2019s a prayer",
+  "A \u20b9500 SIP in the wrong fund is still the wrong fund",
+  "Index funds don\u2019t need a corner office in BKC",
+  "Your portfolio has 7 funds and they all own HDFC Bank",
+  "\u201cWealth creation\u201d is what your distributor calls his commission",
+  "SEBI made direct plans mandatory. Nobody told you. Funny, that",
+  "Sectoral funds: because FOMO needed a DEMAT account",
+  "Exit load exists so you can\u2019t leave when the fund underperforms",
+  "Your mid-cap fund\u2019s biggest holding is a large-cap stock",
+  "The \u20b910 NAV myth has survived longer than most marriages",
+  "If your advisor can\u2019t explain Sharpe ratio, fire your advisor",
+  "Regular plan investors are subsidizing their distributor\u2019s EMI",
+  "Your fund\u2019s alpha disappeared after adjusting for risk",
+  "ELSS lock-in: 3 years of pretending you\u2019re a long-term investor",
+  "Dividend option doesn\u2019t create income. It returns your own money",
+  "AUM of \u20b950,000 Cr in a small-cap fund. Read that again",
+  "Benchmark change mid-year? Nothing suspicious at all",
+  "Your liquid fund lost money in 2019. Liquid was doing heavy lifting",
+  "Star ratings change quarterly. Stars are for restaurants, not funds",
+  "Consistent means the fund manager didn\u2019t panic-sell. Low bar",
+  "Your distributor earns more from your SIP than you earn from your job",
 ];
 
 /* ── Stats Strip (Homepage) ── */
@@ -133,21 +155,21 @@ export const COLLECTIONS: Collection[] = [
   {
     id: "rm-recommended", number: "01",
     name: "Funds Your Bank RM Gets Paid to Push",
-    description: "Your relationship manager called. Again. Not because they care about your retirement \u2014 because your SIP is their EMI. These are the funds with the fattest trail commissions.",
+    description: "Your RM called. Again. Not for your retirement \u2014 for his commission.",
     count: 12, tag: "EXPOS\u00c9",
     funds: ["SBI Blue Chip", "Axis Bluechip", "HDFC Top 100", "ICICI Pru Bluechip", "Kotak Bluechip"],
   },
   {
     id: "actually-good", number: "02",
     name: "The 3 AM Portfolio",
-    description: "Three funds. Buy them. Set a SIP. Delete your brokerage app. Go live your life. Check back in 2045. This is what \u2018boring\u2019 looks like when it grows up to be \u2018wealthy.\u2019",
+    description: "Three funds. One SIP. Delete your brokerage app. Live your life.",
     count: 5, tag: "EDITOR\u2019S PICK",
     funds: ["Parag Parikh Flexi Cap", "HDFC Mid-Cap Opportunities", "UTI Nifty 50 Index", "ICICI Pru Value Discovery", "Kotak Equity Opportunities"],
   },
   {
     id: "small-cap-circus", number: "03",
     name: "The Small-Cap Circus",
-    description: "Where \u20b91 lakh becomes \u20b95 lakh. Or \u20b960,000. Sometimes in the same year. The fund managers here are either geniuses or gambling addicts.",
+    description: "Where \u20b91L becomes \u20b95L. Or \u20b960K. Sometimes in the same week.",
     count: 8, tag: "HIGH RISK",
     funds: ["Quant Small Cap", "Nippon India Small Cap", "SBI Small Cap", "Axis Small Cap", "HDFC Small Cap"],
   },
