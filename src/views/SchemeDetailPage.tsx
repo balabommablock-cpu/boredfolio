@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { cn, formatINR, formatNAV, formatAUM, formatPercent, formatDate, BRAND_COLORS } from "@/lib/utils";
 import { getFundData, getFundPeers, getFundYearReturns } from "@/lib/fundMockData";
+import { FUND_NICKNAMES } from "@/lib/editorialData";
 import {
   generateNAVData, generateRollingReturns, generateDrawdownData,
 } from "@/lib/mockData";
@@ -100,6 +101,23 @@ export default function SchemeDetailPage({ slug = "ppfas-flexi-cap" }: { slug?: 
             </>
           }
         />
+
+        {/* ═══ Editorial Nickname & One-Line Truth ═══ */}
+        {FUND_NICKNAMES[slug] && (
+          <>
+            <div className="font-sans text-sm text-mustard-500 italic font-medium -mt-2 mb-3">
+              a.k.a. &ldquo;{FUND_NICKNAMES[slug].nickname}&rdquo;
+            </div>
+            <div className="bg-ink-900 rounded-lg p-4 sm:p-6 mb-6">
+              <div className="font-sans text-[10px] uppercase tracking-[3px] text-mustard-400 font-bold mb-2">
+                The One-Line Truth
+              </div>
+              <div className="font-serif text-base sm:text-xl text-white italic leading-relaxed font-normal">
+                &ldquo;{FUND_NICKNAMES[slug].oneLinerTruth}&rdquo;
+              </div>
+            </div>
+          </>
+        )}
 
         {/* ═══ Key Numbers Strip ═══ */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -461,59 +479,87 @@ export default function SchemeDetailPage({ slug = "ppfas-flexi-cap" }: { slug?: 
 
         {/* ═══ VERDICT TAB ═══ */}
         <TabContent activeTab={activeTab} tabId="verdict">
-          <Card padding="lg">
-            <div className="flex items-center gap-3 mb-6">
-              <VerdictBadge verdict={scheme.verdict?.rating!} />
-              <h2 className="font-serif text-2xl text-ink-900">The Boredfolio Verdict</h2>
+          <div className="space-y-5">
+            {/* The Good */}
+            <div className="bg-good-50 border border-good-100 rounded-lg p-5 sm:p-6">
+              <div className="font-sans text-[10.5px] text-good-600 font-bold uppercase tracking-[2.5px] mb-3">
+                🟢 The Good
+              </div>
+              <ul className="space-y-2">
+                {scheme.verdict?.pros.map((pro, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-good-800 leading-relaxed">
+                    <span className="text-good-500 mt-0.5 shrink-0">✓</span>
+                    {pro}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <p className="text-base text-ink-700 leading-relaxed mb-6">
-              {scheme.verdict?.summary}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-good-50 border border-good-100 rounded-lg p-5">
-                <h3 className="font-serif text-base text-good-700 mb-3">The Good</h3>
-                <ul className="space-y-2">
-                  {scheme.verdict?.pros.map((pro, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-good-800">
-                      <span className="text-good-500 mt-0.5 shrink-0">✓</span>
-                      {pro}
-                    </li>
-                  ))}
-                </ul>
+            {/* The Ugly */}
+            <div className="bg-ugly-50 border border-ugly-100 rounded-lg p-5 sm:p-6">
+              <div className="font-sans text-[10.5px] text-ugly-600 font-bold uppercase tracking-[2.5px] mb-3">
+                🔴 The Ugly
               </div>
+              <ul className="space-y-2">
+                {scheme.verdict?.cons.map((con, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-ugly-800 leading-relaxed">
+                    <span className="text-ugly-500 mt-0.5 shrink-0">✗</span>
+                    {con}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              <div className="bg-ugly-50 border border-ugly-100 rounded-lg p-5">
-                <h3 className="font-serif text-base text-ugly-700 mb-3">The Ugly</h3>
-                <ul className="space-y-2">
-                  {scheme.verdict?.cons.map((con, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-ugly-800">
-                      <span className="text-ugly-500 mt-0.5 shrink-0">✗</span>
-                      {con}
-                    </li>
-                  ))}
-                </ul>
+            {/* The Boredfolio Verdict — charcoal box */}
+            <div className="bg-ink-900 rounded-lg p-5 sm:p-7">
+              <div className="font-sans text-[10.5px] text-mustard-400 font-bold uppercase tracking-[2.5px] mb-3">
+                ★ The Boredfolio Verdict
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <VerdictBadge verdict={scheme.verdict?.rating!} />
+              </div>
+              <p className="font-serif text-base sm:text-xl text-white italic leading-[1.7] font-normal">
+                {scheme.verdict?.summary}
+              </p>
+            </div>
+
+            {/* Commission Gap */}
+            <div className="bg-mustard-400 rounded-lg p-5 sm:p-6">
+              <div className="font-sans text-[10px] text-black/35 font-bold uppercase tracking-[2.5px] mb-3">
+                💸 Commission Gap
+              </div>
+              <div className="font-sans text-[13px] text-black/60 font-medium mb-3">
+                <strong>Direct:</strong> {scheme.ter}% · <strong>Regular:</strong> ~{(scheme.ter! + 0.79).toFixed(2)}%
+              </div>
+              <div className="bg-black/5 p-4 rounded-md">
+                <div className="font-sans text-xs text-black/50">₹10K/month × 20 years Regular plan costs you:</div>
+                <div className="font-serif text-[30px] text-ink-900 font-bold -tracking-[0.5px] mt-2 mb-1">
+                  ₹{Math.round(10000 * 240 * 0.079 * 2.5).toLocaleString("en-IN")}+
+                </div>
+                <div className="font-sans text-[11.5px] text-black/40 italic">
+                  Your distributor&rsquo;s vacation. Your retirement.
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-cream-300">
-              <div>
+            {/* Who Should / Shouldn't */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Card padding="md">
                 <h4 className="font-sans text-xs font-semibold uppercase tracking-[0.15em] text-ink-400 mb-2">
                   Who Should Invest
                 </h4>
                 <p className="text-sm text-ink-700 leading-relaxed">{scheme.verdict?.whoShouldInvest}</p>
-              </div>
-              <div>
+              </Card>
+              <Card padding="md">
                 <h4 className="font-sans text-xs font-semibold uppercase tracking-[0.15em] text-ink-400 mb-2">
                   Who Should Avoid
                 </h4>
                 <p className="text-sm text-ink-700 leading-relaxed">{scheme.verdict?.whoShouldAvoid}</p>
-              </div>
+              </Card>
             </div>
 
             {scheme.verdict?.alternatives && (
-              <div className="mt-6 pt-6 border-t border-cream-300">
+              <Card padding="md">
                 <h4 className="font-sans text-xs font-semibold uppercase tracking-[0.15em] text-ink-400 mb-3">
                   Alternatives Worth Considering
                 </h4>
@@ -524,9 +570,9 @@ export default function SchemeDetailPage({ slug = "ppfas-flexi-cap" }: { slug?: 
                     </Badge>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
-          </Card>
+          </div>
         </TabContent>
       </PageLayout>
 
