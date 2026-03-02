@@ -6,6 +6,18 @@ We strip funds naked so you can invest with your eyes open. No commissions. No a
 
 ---
 
+## Why I Built This
+
+Every mutual fund platform in India makes money from commissions or affiliate links. Their "recommendations" are ads. I wanted a platform that shows you the uncomfortable truth about your funds: the real expense ratios eating your returns, the overlap between your "diversified" portfolio, and how your fund actually performs against its benchmark after fees.
+
+Boredfolio uses data from AMFI (India's mutual fund regulatory body) via mfapi.in. No paid data feeds, no proprietary scores, no black boxes. Every number is verifiable.
+
+### Key decisions
+- **Why mfapi.in over paid APIs?** Free, open, no auth required. AMFI mandates this data be public. Paid APIs add cost without adding data.
+- **Why Next.js App Router with ISR?** Mutual fund NAVs update once daily. ISR lets us cache aggressively (24h for scheme lists, 1h for NAV history) while still feeling real-time.
+- **Why no AI features in v1?** Ship the data layer first, earn trust with accuracy, then add Claude-powered natural language search in v2. The AI is the moat, but the data is the foundation.
+- **Why this design system?** Cream backgrounds, warm colors, serif headings. Mutual fund platforms look like Bloomberg terminals or mobile banking apps. Neither works for retail investors who find finance intimidating. Boredfolio should feel like a magazine, not a dashboard.
+
 ## Quick Start
 
 ```bash
