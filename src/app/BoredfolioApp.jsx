@@ -57,6 +57,34 @@ var calcMaxDrawdown = function(data, days) {
 var fP = function(n){ if(n===null||n===undefined) return "—"; var v=typeof n==="number"?n:parseFloat(n); if(isNaN(v)) return "—"; return (v>=0?"+":"")+v.toFixed(1)+"%"; };
 var fPn = function(n){ if(n===null||n===undefined) return null; var v=typeof n==="number"?n:parseFloat(n); return isNaN(v)?null:v; };
 
+// ── AMC Utilities ──
+var slugify = function(name) {
+  return name.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
+};
+var FUND_TYPES = ["Overnight","Liquid","Ultra Short","Low Duration","Money Market","Short Duration","Medium Duration","Medium to Long","Long Duration","Dynamic Bond","Corporate Bond","Credit Risk","Banking and PSU","Gilt","Floater","Flexi Cap","Large Cap","Large & Mid Cap","Mid Cap","Small Cap","Multi Cap","Multi Asset","Value Fund","Contra","Dividend Yield","Focused","ELSS","Sectoral","Thematic","Equity Savings","Aggressive Hybrid","Conservative Hybrid","Balanced Advantage","Balanced","Arbitrage","Index","ETF","Fund of Funds","FMP","Retirement","Children","Tax Saver","Nifty","Sensex","S&P BSE","Capital Protection","Fixed Maturity","Interval","Infrastructure","Regular Savings","Income"];
+var extractAMC = function(schemeName) {
+  var name = schemeName.trim();
+  var cutoff = name.length;
+  for (var i = 0; i < FUND_TYPES.length; i++) {
+    var idx = name.indexOf(FUND_TYPES[i]);
+    if (idx > 0 && idx < cutoff) cutoff = idx;
+  }
+  var delimiters = [" - "," -","- ","("];
+  for (var j = 0; j < delimiters.length; j++) {
+    var dIdx = name.indexOf(delimiters[j]);
+    if (dIdx > 0 && dIdx < cutoff) cutoff = dIdx;
+  }
+  var prefix = name.substring(0, cutoff).trim();
+  prefix = prefix.replace(/\s*Mutual\s*Fund\s*$/i,"").trim();
+  return prefix || name.split(" ")[0];
+};
+var amcToEditorialSlug = function(amcName) {
+  var lower = amcName.toLowerCase();
+  if (lower.indexOf("parag parikh") >= 0 || lower === "ppfas") return "ppfas";
+  if (lower === "quant") return "quant";
+  return null;
+};
+
 // ── Hooks ──
 function useVis(t) {
   var threshold = t || 0.12;
@@ -80,6 +108,83 @@ function useFund(code) {
     return function(){cancel=true;};
   },[code]);
   return {data:d, loading:l};
+}
+
+var _allFundsCache = null;
+var _allFundsLoading = false;
+var _allFundsListeners = [];
+function useAllFunds() {
+  var _s = useState(_allFundsCache), funds = _s[0], setFunds = _s[1];
+  var _l = useState(!_allFundsCache), loading = _l[0], setLoading = _l[1];
+  var _e = useState(null), err = _e[0], setErr = _e[1];
+  useEffect(function() {
+    if (_allFundsCache) { setFunds(_allFundsCache); setLoading(false); return; }
+    if (_allFundsLoading) {
+      var listener = function(data) { setFunds(data); setLoading(false); };
+      _allFundsListeners.push(listener);
+      return function() { var idx = _allFundsListeners.indexOf(listener); if (idx >= 0) _allFundsListeners.splice(idx, 1); };
+    }
+    _allFundsLoading = true;
+    setLoading(true);
+    fetch("https://api.mfapi.in/mf")
+      .then(function(r) { return r.json(); })
+      .then(function(allSchemes) {
+        // Step 1: Clean scheme names — strip junk prefix, take part before " - "
+        var cleaned = [];
+        for (var i = 0; i < allSchemes.length; i++) {
+          var raw = (allSchemes[i].schemeName || "").replace(/^[\s\d.\t(]+/, "").trim();
+          if (!raw) continue;
+          var dashIdx = raw.indexOf(" - ");
+          if (dashIdx < 0) dashIdx = raw.indexOf(" -");
+          var clean = dashIdx > 0 ? raw.substring(0, dashIdx).trim() : raw.trim();
+          cleaned.push({ scheme: allSchemes[i], words: clean.split(/\s+/) });
+        }
+        // Step 2: Group by first word (lowercased)
+        var byFirst = {};
+        for (var j = 0; j < cleaned.length; j++) {
+          var first = (cleaned[j].words[0] || "").toLowerCase();
+          if (!first) continue;
+          if (!byFirst[first]) byFirst[first] = [];
+          byFirst[first].push(cleaned[j]);
+        }
+        // Step 3: Find longest common word prefix within each group
+        var amcGroups = {};
+        var keys = Object.keys(byFirst);
+        for (var k = 0; k < keys.length; k++) {
+          var group = byFirst[keys[k]];
+          var prefix = group[0].words.slice();
+          for (var g = 1; g < group.length; g++) {
+            var w = group[g].words;
+            var len = Math.min(prefix.length, w.length);
+            var match = 0;
+            for (var m = 0; m < len; m++) {
+              if (prefix[m].toLowerCase() === w[m].toLowerCase()) match = m + 1;
+              else break;
+            }
+            prefix = prefix.slice(0, match);
+          }
+          if (prefix.length === 0) prefix = [group[0].words[0]];
+          var amcName = prefix.join(" ").replace(/\s*(Mutual|Fund|Funds)\s*$/gi,"").trim();
+          if (!amcName) amcName = keys[k];
+          if (!amcGroups[amcName]) { amcGroups[amcName] = { name: amcName, slug: slugify(amcName), schemes: [], editorialSlug: amcToEditorialSlug(amcName) }; }
+          for (var n = 0; n < group.length; n++) { amcGroups[amcName].schemes.push(group[n].scheme); }
+        }
+        var result = Object.keys(amcGroups).map(function(key) { return amcGroups[key]; });
+        result.sort(function(a, b) {
+          if (a.editorialSlug && !b.editorialSlug) return -1;
+          if (!a.editorialSlug && b.editorialSlug) return 1;
+          return b.schemes.length - a.schemes.length;
+        });
+        _allFundsCache = result;
+        _allFundsLoading = false;
+        setFunds(result);
+        setLoading(false);
+        for (var j = 0; j < _allFundsListeners.length; j++) { _allFundsListeners[j](result); }
+        _allFundsListeners = [];
+      })
+      .catch(function() { _allFundsLoading = false; setLoading(false); setErr("Failed to load fund data"); });
+  }, []);
+  return { funds: funds, loading: loading, error: err };
 }
 
 function useW() {
@@ -648,7 +753,7 @@ function SchemeRow(p) {
 function FundHousePage(p) {
   var house=p.slug==="ppfas"?PPFAS:p.slug==="quant"?QUANT:null;
   var go=useGo(),m=useW()<768; var _r=useVis(0.05),ref=_r[0],vis=_r[1];
-  if(!house) return e(Shell,{label:"404",title:"Fund house not found"});
+  if(!house) return e(DynamicHousePage,{slug:p.slug});
   return e("div",{style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
     e(Wrap,null,
       e("span",{onClick:function(){go("/");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:4,display:"inline-block",marginBottom:20}},"← Home"),
@@ -761,6 +866,126 @@ function ReturnRow(p) {
       p.note?e("div",{style:{fontFamily:Hf,fontSize:p.m?11:13,color:C.sage,marginTop:2}},p.note):null
     ),
     e("span",{style:{fontFamily:Mf,fontSize:p.m?14:16,fontWeight:700,color:color}},fP(p.v))
+  );
+}
+
+// ══════════════════════════════════════════
+// DYNAMIC HOUSE PAGE — non-profiled fund houses
+// ══════════════════════════════════════════
+function DynamicHousePage(p) {
+  var go = useGo(), m = useW() < 768;
+  var allFunds = useAllFunds();
+  var _v = useState(false), vis = _v[0], setVis = _v[1];
+  var _filter = useState(""), filter = _filter[0], setFilter = _filter[1];
+
+  var amc = null;
+  if (allFunds.funds) {
+    for (var i = 0; i < allFunds.funds.length; i++) {
+      if (allFunds.funds[i].slug === p.slug) { amc = allFunds.funds[i]; break; }
+    }
+  }
+
+  useEffect(function() {
+    if (!allFunds.loading && amc) {
+      var t = setTimeout(function() { setVis(true); }, 60);
+      return function() { clearTimeout(t); };
+    }
+  }, [allFunds.loading]);
+
+  if (allFunds.loading) return e("div", {style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
+    e(Wrap, null,
+      e("span", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,display:"inline-block",marginBottom:20,textDecoration:"underline",textUnderlineOffset:4}}, "← Explore"),
+      e("div", {style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:8,textTransform:"uppercase"}}, "Fund House"),
+      e("h1", {style:{fontFamily:Sf,fontSize:m?24:44,fontWeight:400,color:C.char,lineHeight:1.1,margin:"0 0 24px"}}, "Loading fund house..."),
+      e("div", {style:{fontFamily:Mf,fontSize:12,color:C.light,animation:"pulse 1.5s infinite"}}, "Fetching scheme data from mfapi.in")
+    )
+  );
+
+  if (!amc) return e(Shell, {label:"Fund House",title:"Fund house not found",sub:"We couldn't find a fund house matching this URL. It may have been renamed or merged."},
+    e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}}, "Browse all fund houses →")
+  );
+
+  var schemes = amc.schemes;
+  if (filter.trim()) {
+    var filterWords = filter.toLowerCase().split(/\s+/).filter(function(w) { return w; });
+    schemes = schemes.filter(function(s) { var low = s.schemeName.toLowerCase(); return filterWords.every(function(w) { return low.indexOf(w) >= 0; }); });
+  }
+
+  return e("div", {style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
+    e(Wrap, null,
+      e("div", {style:{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap",alignItems:"center"}},
+        e("span", {onClick:function(){go("/");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:4,padding:"6px 0"}}, "Home"),
+        e("span", {style:{color:C.faint}}, " / "),
+        e("span", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:4,padding:"6px 0"}}, "Explore"),
+        e("span", {style:{color:C.faint}}, " / "),
+        e("span", {style:{fontFamily:Bf,fontSize:12,color:C.muted}}, amc.name)
+      ),
+
+      e("div", null,
+        e(A, {vis:vis,delay:0.05},
+          e("div", {style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:8,textTransform:"uppercase"}}, "Fund House")
+        ),
+        e(A, {vis:vis,delay:0.1},
+          e("h1", {style:{fontFamily:Sf,fontSize:m?28:52,fontWeight:400,color:C.char,lineHeight:1.08,margin:"0 0 8px"}}, amc.name)
+        ),
+        e(A, {vis:vis,delay:0.15},
+          e("p", {style:{fontFamily:Bf,fontSize:m?14:16,color:C.muted,lineHeight:1.7,margin:"0 0 24px",maxWidth:600}},
+            amc.schemes.length + " scheme" + (amc.schemes.length !== 1 ? "s" : "") + " on file. Live data powered by mfapi.in. Tap any scheme for NAV history, returns, and volatility."
+          )
+        ),
+
+        e(A, {vis:vis,delay:0.2},
+          e("div", {style:{background:C.sage+"08",border:"1px solid "+C.sage+"20",borderRadius:12,padding:m?16:20,marginBottom:24}},
+            e("p", {style:{fontFamily:Bf,fontSize:m?12:13,color:C.body,margin:0,lineHeight:1.6}},
+              "This is a data-only view. We haven't written an editorial for " + amc.name + " yet. Full analysis is available for ",
+              e("span", {onClick:function(){go("/house/ppfas");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}}, "PPFAS"),
+              " and ",
+              e("span", {onClick:function(){go("/house/quant");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}}, "Quant"),
+              "."
+            )
+          )
+        ),
+
+        amc.schemes.length > 10 ? e(A, {vis:vis,delay:0.22},
+          e("input", {
+            value: filter,
+            onChange: function(ev) { setFilter(ev.target.value); },
+            placeholder: "Filter — 'growth', 'direct', 'flexi cap'...",
+            style: {width:"100%",fontFamily:Bf,fontSize:m?13:14,padding:"12px 18px",border:"1.5px solid "+C.border,borderRadius:8,background:C.white,outline:"none",color:C.char,marginBottom:16,boxSizing:"border-box"}
+          })
+        ) : null,
+
+        e(A, {vis:vis,delay:0.25},
+          e("div", {style:{fontFamily:Mf,fontSize:10,color:C.light,letterSpacing:1,marginBottom:10}},
+            filter ? schemes.length + " of " + amc.schemes.length + " schemes" : amc.schemes.length + " scheme" + (amc.schemes.length !== 1 ? "s" : "")
+          )
+        ),
+
+        e(A, {vis:vis,delay:0.3},
+          e("div", {style:{borderRadius:10,overflow:"hidden",border:"1px solid "+C.border}},
+            schemes.length === 0
+              ? e("div", {style:{padding:16,textAlign:"center"}}, e("p", {style:{fontFamily:Bf,fontSize:13,color:C.muted}}, "No schemes match '" + filter + "'"))
+              : schemes.map(function(s, i) {
+                  return e(HoverRow, {
+                    key: s.schemeCode,
+                    onClick: function() { go("/fund/" + s.schemeCode); },
+                    style: {padding:m?"12px 14px":"14px 18px",borderBottom:i<schemes.length-1?"1px solid "+C.border:"none"}
+                  },
+                    e("div", {style:{fontFamily:Bf,fontSize:m?12:14,fontWeight:600,color:C.char,marginBottom:2}}, s.schemeName),
+                    e("div", {style:{fontFamily:Mf,fontSize:10,color:C.light}}, "Code: " + s.schemeCode)
+                  );
+                })
+          )
+        ),
+
+        e(A, {vis:vis,delay:0.35},
+          e("div", {style:{display:"flex",gap:12,marginTop:24,flexWrap:"wrap"}},
+            e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:600,color:C.sage,background:"transparent",border:"1.5px solid "+C.sage,padding:"12px 22px",borderRadius:8,cursor:"pointer"}}, "← All fund houses"),
+            e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"12px 22px",borderRadius:8,cursor:"pointer"}}, "Search all schemes →")
+          )
+        )
+      )
+    )
   );
 }
 
@@ -1125,27 +1350,73 @@ function Shell(p) {
 }
 
 function ExplorePage() {
-  var _q=useState(""),q=_q[0],sq=_q[1]; var _r=useState(null),res=_r[0],sr=_r[1]; var _l=useState(false),ld=_l[0],sld=_l[1]; var go=useGo(),m=useW()<768;
+  var _q=useState(""),q=_q[0],sq=_q[1]; var _r=useState(null),res=_r[0],sr=_r[1]; var _l=useState(false),ld=_l[0],sld=_l[1];
+  var _f=useState(""),filter=_f[0],setFilter=_f[1];
+  var go=useGo(),m=useW()<768;
+  var allFunds=useAllFunds();
   var search = useCallback(function(){ if(!q.trim())return; sld(true); fetch("https://api.mfapi.in/mf/search?q="+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(j){sr(j.slice(0,20));}).catch(function(){sr([]);}).finally(function(){sld(false);}); },[q]);
-  return e(Shell,{label:"Explore",title:"Every mutual fund in India.",sub:"12,247 schemes. 2 fund houses with full editorial profiles. The rest get live NAV data. We're adding more every week."},
+
+  var filteredFunds = allFunds.funds ? allFunds.funds.filter(function(amc) {
+    if (!filter.trim()) return true;
+    return amc.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+  }) : [];
+  var totalAMCs = allFunds.funds ? allFunds.funds.length : 0;
+  var totalSchemes = allFunds.funds ? allFunds.funds.reduce(function(sum, amc) { return sum + amc.schemes.length; }, 0) : 0;
+
+  return e(Shell,{label:"Explore",title:"Every mutual fund in India.",
+    sub:allFunds.loading ? "Loading the entire universe..." : totalAMCs+" fund houses. "+fI(totalSchemes)+" schemes. 2 with full editorial profiles. The rest get live NAV data."},
+    // Search bar
     e("div",{style:{display:"flex",gap:10,marginBottom:24}},
-      e("input",{value:q,onChange:function(ev){sq(ev.target.value);},onKeyDown:function(ev){if(ev.key==="Enter")search();},placeholder:"Try 'parag parikh' or 'quant small cap'",style:{flex:1,fontFamily:Bf,fontSize:m?14:15,padding:"12px 18px",border:"1.5px solid "+C.border,borderRadius:8,background:C.white,outline:"none",color:C.char}}),
+      e("input",{value:q,onChange:function(ev){sq(ev.target.value);},onKeyDown:function(ev){if(ev.key==="Enter")search();},placeholder:"Search any scheme — 'parag parikh', 'hdfc flexi cap', 'nifty 50 index'",style:{flex:1,fontFamily:Bf,fontSize:m?14:15,padding:"12px 18px",border:"1.5px solid "+C.border,borderRadius:8,background:C.white,outline:"none",color:C.char}}),
       e("button",{onClick:search,style:{fontFamily:Bf,fontSize:13,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"12px 20px",borderRadius:8,cursor:"pointer"}},"Search")
     ),
+    // Search results
     ld?e("p",{style:{fontFamily:Mf,fontSize:11,color:C.light}},"Searching..."):null,
     res&&res.length===0?e("p",{style:{fontFamily:Bf,fontSize:13,color:C.muted}},"Nothing found."):null,
-    res&&res.length>0?e("div",{style:{borderRadius:10,overflow:"hidden",border:"1px solid "+C.border}},res.map(function(r,i){
+    res&&res.length>0?e("div",{style:{borderRadius:10,overflow:"hidden",border:"1px solid "+C.border,marginBottom:32}},res.map(function(r,i){
       return e(HoverRow,{key:i,onClick:function(){go("/fund/"+r.schemeCode);},style:{padding:"12px 18px",borderBottom:i<res.length-1?"1px solid "+C.border:"none"}},
         e("div",{style:{fontFamily:Bf,fontSize:m?12:14,fontWeight:600,color:C.char,marginBottom:1}},r.schemeName),
         e("div",{style:{fontFamily:Mf,fontSize:10,color:C.light}},r.schemeCode)
       );
     })):null,
+    // AMC grid (when no search results active)
     !res?e("div",{style:{marginTop:20}},
-      e("p",{style:{fontFamily:Bf,fontSize:13,color:C.light,marginBottom:12}},"Or browse fund houses:"),
-      e("div",{style:{display:"flex",gap:10,flexWrap:"wrap"}},
-        e(HoverCard,{onClick:function(){go("/house/ppfas");},style:{flex:"1 1 "+m?"100%":"280px",background:C.white,borderRadius:10,padding:18}},e("div",{style:{fontFamily:Bf,fontSize:m?14:16,fontWeight:700,color:C.char,marginBottom:2}},"PPFAS Mutual Fund"),e("div",{style:{fontFamily:Mf,fontSize:12,color:C.sage,fontWeight:600}},"₹1.47L Cr")),
-        e(HoverCard,{onClick:function(){go("/house/quant");},style:{flex:"1 1 "+m?"100%":"280px",background:C.white,borderRadius:10,padding:18}},e("div",{style:{fontFamily:Bf,fontSize:m?14:16,fontWeight:700,color:C.char,marginBottom:2}},"Quant Mutual Fund"),e("div",{style:{fontFamily:Mf,fontSize:12,color:C.sage,fontWeight:600}},"₹95K Cr"))
-      )
+      e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:m?"flex-start":"center",flexDirection:m?"column":"row",gap:12,marginBottom:16}},
+        e("p",{style:{fontFamily:Bf,fontSize:13,color:C.light,margin:0}},
+          allFunds.loading ? "Loading fund houses..." : "All "+totalAMCs+" fund houses"
+        ),
+        !allFunds.loading && totalAMCs > 10 ? e("input",{
+          value:filter,
+          onChange:function(ev){setFilter(ev.target.value);},
+          placeholder:"Filter fund houses...",
+          style:{fontFamily:Bf,fontSize:13,padding:"8px 14px",border:"1px solid "+C.border,borderRadius:6,background:C.white,outline:"none",color:C.char,width:m?"100%":220}
+        }) : null
+      ),
+      // Loading
+      allFunds.loading ? e("div",{style:{textAlign:"center",padding:"40px 0"}},
+        e("div",{style:{fontFamily:Mf,fontSize:12,color:C.light,animation:"pulse 1.5s infinite"}},"Fetching all schemes from mfapi.in..."),
+        e("div",{style:{fontFamily:Hf,fontSize:14,color:C.sage,marginTop:8}},"This takes a few seconds. We're downloading every scheme in India.")
+      ) : null,
+      // Error
+      allFunds.error ? e("div",{style:{background:C.rBg,border:"1px solid "+C.red+"30",borderRadius:10,padding:16,marginBottom:16}},
+        e("p",{style:{fontFamily:Bf,fontSize:13,color:C.red,margin:0}},"Couldn't load fund data. The API might be down. Try refreshing.")
+      ) : null,
+      // AMC grid
+      !allFunds.loading && filteredFunds.length > 0 ? e("div",{style:{display:"grid",gridTemplateColumns:m?"1fr":"1fr 1fr 1fr",gap:10}},
+        filteredFunds.map(function(amc) {
+          var isEditorial = amc.editorialSlug !== null;
+          var route = isEditorial ? "/house/" + amc.editorialSlug : "/house/" + amc.slug;
+          return e(HoverCard,{key:amc.slug,onClick:function(){go(route);},style:{background:C.white,borderRadius:10,padding:m?14:18,border:isEditorial?"1.5px solid "+C.sage+"50":"1px solid "+C.border}},
+            e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}},
+              e("div",{style:{fontFamily:Bf,fontSize:m?13:14,fontWeight:700,color:C.char,lineHeight:1.3}},amc.name),
+              isEditorial ? e("div",{style:{fontFamily:Mf,fontSize:8,fontWeight:700,letterSpacing:1,color:C.sage,background:C.sage+"12",padding:"3px 7px",borderRadius:4,flexShrink:0,textTransform:"uppercase"}},"Profiled") : null
+            ),
+            e("div",{style:{fontFamily:Mf,fontSize:11,color:C.light,marginTop:6}},amc.schemes.length+" scheme"+(amc.schemes.length!==1?"s":""))
+          );
+        })
+      ) : null,
+      // Empty filter
+      !allFunds.loading && filter && filteredFunds.length === 0 ? e("p",{style:{fontFamily:Bf,fontSize:13,color:C.muted,textAlign:"center",padding:"20px 0"}},"No fund house matches '"+filter+"'") : null
     ):null
   );
 }
