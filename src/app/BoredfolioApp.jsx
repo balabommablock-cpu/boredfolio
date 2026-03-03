@@ -770,7 +770,13 @@ function ReturnRow(p) {
 function DynamicSchemePage(p) {
   var fd = useFund(p.code);
   var go = useGo(), m = useW() < 768;
-  var _r = useVis(0.05), ref = _r[0], vis = _r[1];
+  var _v = useState(false), vis = _v[0], setVis = _v[1];
+  useEffect(function(){
+    if(!fd.loading && fd.data && fd.data.meta && fd.data.meta.scheme_name){
+      var t = setTimeout(function(){ setVis(true); }, 60);
+      return function(){ clearTimeout(t); };
+    }
+  },[fd.loading]);
 
   if (fd.loading) return e("div", {style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
     e(Wrap, null,
@@ -781,7 +787,7 @@ function DynamicSchemePage(p) {
     )
   );
 
-  if (!fd.data || !fd.data.meta) return e(Shell, {label:"Fund",title:"Fund not found",sub:"This scheme code doesn't exist on mfapi.in. It may have been merged or closed."},
+  if (!fd.data || !fd.data.meta || !fd.data.meta.scheme_name) return e(Shell, {label:"Fund",title:"Fund not found",sub:"This scheme code doesn't exist on mfapi.in. It may have been merged or closed."},
     e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}}, "Explore funds →")
   );
 
@@ -808,7 +814,7 @@ function DynamicSchemePage(p) {
         e("span", {style:{fontFamily:Bf,fontSize:12,color:C.muted}}, meta.fund_house)
       ),
 
-      e("div", {ref:ref},
+      e("div", null,
         // 2. Category badge
         e(A, {vis:vis,delay:0.05},
           e("div", {style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:6,textTransform:"uppercase"}}, meta.scheme_category || "Fund")
@@ -1147,7 +1153,7 @@ function ExplorePage() {
 function FundPage(p) {
   var fd=useFund(p.id),go=useGo(),m=useW()<768;
   if(fd.loading) return e(Shell,{label:"Fund",title:"Loading..."});
-  if(!fd.data||!fd.data.meta) return e(Shell,{label:"Fund",title:"Fund not found"});
+  if(!fd.data||!fd.data.meta||!fd.data.meta.scheme_name) return e(Shell,{label:"Fund",title:"Fund not found"});
   var meta=fd.data.meta, data=fd.data.data||[], nav90=data.slice(0,90), latest=data[0]||null;
   var allS=PPFAS.schemes.concat(QUANT.schemes), known=allS.find(function(s){return s.code===p.id;});
   if(known){var hs=PPFAS.schemes.indexOf(known)>=0?"ppfas":"quant"; return e(Shell,{label:meta.scheme_category||"Fund",title:meta.scheme_name},e("p",{style:{fontFamily:Bf,fontSize:14,color:C.muted,marginBottom:14}},"We have a detailed editorial analysis of this fund."),e("button",{onClick:function(){go("/scheme/"+hs+"/"+p.id);},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.sage,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}},"View full breakdown →"));}
