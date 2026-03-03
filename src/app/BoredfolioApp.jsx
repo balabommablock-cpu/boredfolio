@@ -764,12 +764,140 @@ function ReturnRow(p) {
   );
 }
 
+// ══════════════════════════════════════════
+// DYNAMIC SCHEME PAGE — non-profiled funds
+// ══════════════════════════════════════════
+function DynamicSchemePage(p) {
+  var fd = useFund(p.code);
+  var go = useGo(), m = useW() < 768;
+  var _v = useState(false), vis = _v[0], setVis = _v[1];
+  useEffect(function(){
+    if(!fd.loading && fd.data && fd.data.meta && fd.data.meta.scheme_name){
+      var t = setTimeout(function(){ setVis(true); }, 60);
+      return function(){ clearTimeout(t); };
+    }
+  },[fd.loading]);
+
+  if (fd.loading) return e("div", {style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
+    e(Wrap, null,
+      e("span", {onClick:function(){go("/");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,display:"inline-block",marginBottom:20,textDecoration:"underline",textUnderlineOffset:4,padding:"6px 0"}}, "← Home"),
+      e("div", {style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:8,textTransform:"uppercase"}}, "Fund"),
+      e("h1", {style:{fontFamily:Sf,fontSize:m?24:44,fontWeight:400,color:C.char,lineHeight:1.1,margin:"0 0 24px"}}, "Fetching live data..."),
+      e("div", {style:{fontFamily:Mf,fontSize:12,color:C.light,animation:"pulse 1.5s infinite"}}, "Loading NAV history from mfapi.in")
+    )
+  );
+
+  if (!fd.data || !fd.data.meta || !fd.data.meta.scheme_name) return e(Shell, {label:"Fund",title:"Fund not found",sub:"This scheme code doesn't exist on mfapi.in. It may have been merged or closed."},
+    e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}}, "Explore funds →")
+  );
+
+  var meta = fd.data.meta;
+  var data = fd.data.data || [];
+  var nav90 = data.slice(0, 90);
+  var latest = data[0] || null;
+
+  var liveReturns = {
+    d1: calcReturn(data, 1), w1: calcReturn(data, 5), m1: calcReturn(data, 21),
+    m3: calcReturn(data, 63), m6: calcReturn(data, 126), y1: calcReturn(data, 252),
+    y3: calcCAGR(data, 756), y5: calcCAGR(data, 1260)
+  };
+  var vol1y = calcVolatility(data, 252);
+  var maxDD = calcMaxDrawdown(data, 1260);
+  var hasReturns = liveReturns.m1 !== null || liveReturns.y1 !== null;
+
+  return e("div", {style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
+    e(Wrap, null,
+      // 1. Breadcrumb
+      e("div", {style:{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap",alignItems:"center"}},
+        e("span", {onClick:function(){go("/");},style:{fontFamily:Bf,fontSize:12,color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:4,padding:"6px 0"}}, "Home"),
+        e("span", {style:{color:C.faint}}, " / "),
+        e("span", {style:{fontFamily:Bf,fontSize:12,color:C.muted}}, meta.fund_house)
+      ),
+
+      e("div", null,
+        // 2. Category badge
+        e(A, {vis:vis,delay:0.05},
+          e("div", {style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:6,textTransform:"uppercase"}}, meta.scheme_category || "Fund")
+        ),
+
+        // 3. Fund name
+        e(A, {vis:vis,delay:0.1},
+          e("h1", {style:{fontFamily:Sf,fontSize:m?24:44,fontWeight:400,color:C.char,lineHeight:1.1,margin:"0 0 8px"}}, meta.scheme_name)
+        ),
+
+        // 4. Subtitle
+        e(A, {vis:vis,delay:0.15},
+          e("p", {style:{fontFamily:Bf,fontSize:m?14:16,color:C.muted,lineHeight:1.7,margin:"0 0 24px"}}, meta.fund_house + " · " + (meta.scheme_type || "Open Ended"))
+        ),
+
+        // 5 & 6. NAV card + Returns table (2-col grid)
+        e(A, {vis:vis,delay:0.2},
+          e("div", {style:{display:"grid",gridTemplateColumns:m?"1fr":"1fr 1fr",gap:14,marginBottom:32}},
+            // 5. NAV card (left)
+            e("div", {style:{background:C.white,border:"1px solid "+C.border,borderRadius:12,padding:m?20:28}},
+              e("div", {style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,marginBottom:4,textTransform:"uppercase"}}, "Latest NAV" + (latest ? " · " + latest.date : "")),
+              e("div", {style:{fontFamily:Mf,fontSize:m?28:40,fontWeight:700,color:C.char,letterSpacing:-1,marginBottom:14}}, latest ? "₹" + fN(latest.nav) : "—"),
+              nav90.length > 0 ? e(Spark, {data:nav90,w:m?280:380,h:60}) : null,
+              vol1y !== null ? e("div", {style:{marginTop:12,padding:"10px 0",borderTop:"1px solid "+C.border}},
+                e("div", {style:{fontFamily:Mf,fontSize:8,letterSpacing:2,color:C.light,textTransform:"uppercase",marginBottom:4}}, "Annualized volatility (1Y)"),
+                e("div", {style:{fontFamily:Mf,fontSize:16,fontWeight:700,color:vol1y>20?C.red:vol1y>12?C.mustard:C.green}}, vol1y.toFixed(1) + "%"),
+                e("div", {style:{fontFamily:Hf,fontSize:m?12:14,color:C.sage,marginTop:2}}, vol1y > 20 ? "Wild ride. Seatbelts required." : vol1y > 12 ? "Moderate swings. Normal for equity." : "Unusually calm. The cash helps.")
+              ) : null,
+              maxDD !== null && maxDD > 5 ? e("div", {style:{marginTop:8}},
+                e("div", {style:{fontFamily:Mf,fontSize:8,letterSpacing:2,color:C.light,textTransform:"uppercase",marginBottom:4}}, "Max drawdown (5Y)"),
+                e("div", {style:{fontFamily:Mf,fontSize:16,fontWeight:700,color:C.red}}, "-" + maxDD.toFixed(1) + "%"),
+                e("div", {style:{fontFamily:Hf,fontSize:m?12:14,color:C.sage,marginTop:2}}, maxDD > 30 ? "That's a stomach test. Could you hold through this?" : maxDD > 15 ? "Painful but recoverable." : "Relatively gentle decline.")
+              ) : null
+            ),
+
+            // 6. Returns table (right)
+            hasReturns ? e("div", {style:{background:C.white,border:"1px solid "+C.border,borderRadius:12,overflow:"hidden"}},
+              e("div", {style:{padding:m?"12px 14px":"14px 20px",borderBottom:"1px solid "+C.border,background:C.cream}},
+                e("div", {style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,textTransform:"uppercase"}}, "Report card — calculated from live NAV data")
+              ),
+              e(ReturnRow, {label:"1 Day",v:liveReturns.d1,m:m}),
+              e(ReturnRow, {label:"1 Week",v:liveReturns.w1,m:m}),
+              e(ReturnRow, {label:"1 Month",v:liveReturns.m1,m:m}),
+              e(ReturnRow, {label:"3 Months",v:liveReturns.m3,m:m}),
+              e(ReturnRow, {label:"6 Months",v:liveReturns.m6,m:m}),
+              e(ReturnRow, {label:"1 Year",v:liveReturns.y1,note:liveReturns.y1!==null?(liveReturns.y1>15?"Strong year":"Meh year"):null,m:m,highlight:true}),
+              e(ReturnRow, {label:"3Y CAGR",v:liveReturns.y3,note:liveReturns.y3!==null?(liveReturns.y3>18?"Beating most FMs":"Decent"):null,m:m}),
+              e(ReturnRow, {label:"5Y CAGR",v:liveReturns.y5,note:liveReturns.y5!==null?(liveReturns.y5>20?"Elite":"Solid"):null,m:m,highlight:true,last:true})
+            ) : null
+          )
+        ),
+
+        // 7. Editorial coming soon note
+        e(A, {vis:vis,delay:0.25},
+          e("div", {style:{background:C.sage+"08",border:"1px solid "+C.sage+"20",borderRadius:12,padding:m?16:20,marginTop:24}},
+            e("p", {style:{fontFamily:Bf,fontSize:m?12:13,color:C.body,margin:0,lineHeight:1.6}},
+              "We haven't written an editorial profile for this fund yet. Live NAV data from mfapi.in. Deep-dive analysis with holdings, commentary, and honest opinions is available for ",
+              e("span", {onClick:function(){go("/house/ppfas");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}}, "PPFAS"),
+              " and ",
+              e("span", {onClick:function(){go("/house/quant");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}}, "Quant"),
+              ". More fund houses coming soon."
+            )
+          )
+        ),
+
+        // 8. CTAs
+        e(A, {vis:vis,delay:0.3},
+          e("div", {style:{display:"flex",gap:12,marginTop:24,flexWrap:"wrap"}},
+            e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:600,color:C.sage,background:"transparent",border:"1.5px solid "+C.sage,padding:"12px 22px",borderRadius:8,cursor:"pointer"}}, "← Explore funds"),
+            e("button", {onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"12px 22px",borderRadius:8,cursor:"pointer"}}, "Search all 12,247 →")
+          )
+        )
+      )
+    )
+  );
+}
+
 function SchemePage(p) {
   var house=p.houseSlug==="ppfas"?PPFAS:p.houseSlug==="quant"?QUANT:null;
   var scheme=house?house.schemes.find(function(s){return s.code===p.code;}):null;
   var fd=useFund(p.code); var go=useGo(),m=useW()<768;
   var _r=useVis(0.05),ref=_r[0],vis=_r[1]; var _sa=useState(false),showAll=_sa[0],setSA=_sa[1];
-  if(!scheme) return e(Shell,{label:"Scheme",title:"Fund not found",sub:"Might have merged, closed, or we haven't profiled it yet."});
+  if(!scheme) return e(DynamicSchemePage,{code:p.code});
 
   var data = fd.data&&fd.data.data?fd.data.data:[];
   var nav90 = data.slice(0,90); var latest = data[0]||null;
@@ -1025,49 +1153,11 @@ function ExplorePage() {
 function FundPage(p) {
   var fd=useFund(p.id),go=useGo(),m=useW()<768;
   if(fd.loading) return e(Shell,{label:"Fund",title:"Loading..."});
-  if(!fd.data||!fd.data.meta) return e(Shell,{label:"Fund",title:"Fund not found"});
+  if(!fd.data||!fd.data.meta||!fd.data.meta.scheme_name) return e(Shell,{label:"Fund",title:"Fund not found"});
   var meta=fd.data.meta, data=fd.data.data||[], nav90=data.slice(0,90), latest=data[0]||null;
   var allS=PPFAS.schemes.concat(QUANT.schemes), known=allS.find(function(s){return s.code===p.id;});
   if(known){var hs=PPFAS.schemes.indexOf(known)>=0?"ppfas":"quant"; return e(Shell,{label:meta.scheme_category||"Fund",title:meta.scheme_name},e("p",{style:{fontFamily:Bf,fontSize:14,color:C.muted,marginBottom:14}},"We have a detailed editorial analysis of this fund."),e("button",{onClick:function(){go("/scheme/"+hs+"/"+p.id);},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.sage,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}},"View full breakdown →"));}
-  var liveReturns={d1:calcReturn(data,1),w1:calcReturn(data,5),m1:calcReturn(data,21),m3:calcReturn(data,63),m6:calcReturn(data,126),y1:calcReturn(data,252),y3:calcCAGR(data,756),y5:calcCAGR(data,1260)};
-  var vol1y=calcVolatility(data,252);
-  var maxDD=calcMaxDrawdown(data,1260);
-  var hasReturns=liveReturns.m1!==null||liveReturns.y1!==null;
-  return e(Shell,{label:meta.scheme_category||"Fund",title:meta.scheme_name,sub:meta.fund_house},
-    e("div",{style:{display:"grid",gridTemplateColumns:m?"1fr":"1fr 1fr",gap:16,marginBottom:16}},
-      e("div",{style:{background:C.white,border:"1px solid "+C.border,borderRadius:12,padding:m?20:28}},
-        e("div",{style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,marginBottom:4,textTransform:"uppercase"}},"NAV"+(latest?" · "+latest.date:"")),
-        e("div",{style:{fontFamily:Mf,fontSize:m?28:36,fontWeight:700,color:C.char,letterSpacing:-1,marginBottom:14}},latest?"₹"+fN(latest.nav):"—"),
-        nav90.length>0?e(Spark,{data:nav90,w:m?280:380,h:60}):null,
-        vol1y!==null?e("div",{style:{marginTop:12,padding:"10px 0",borderTop:"1px solid "+C.border}},
-          e("div",{style:{fontFamily:Mf,fontSize:8,letterSpacing:2,color:C.light,textTransform:"uppercase",marginBottom:4}},"Annualized volatility (1Y)"),
-          e("div",{style:{fontFamily:Mf,fontSize:16,fontWeight:700,color:vol1y>20?C.red:vol1y>12?C.mustard:C.green}},vol1y.toFixed(1)+"%"),
-          e("div",{style:{fontFamily:Hf,fontSize:m?12:14,color:C.sage,marginTop:2}},vol1y>20?"Wild ride. Seatbelts required.":vol1y>12?"Moderate swings. Normal for equity.":"Unusually calm.")
-        ):null,
-        maxDD!==null&&maxDD>5?e("div",{style:{marginTop:8}},
-          e("div",{style:{fontFamily:Mf,fontSize:8,letterSpacing:2,color:C.light,textTransform:"uppercase",marginBottom:4}},"Max drawdown (5Y)"),
-          e("div",{style:{fontFamily:Mf,fontSize:16,fontWeight:700,color:C.red}},"-"+maxDD.toFixed(1)+"%"),
-          e("div",{style:{fontFamily:Hf,fontSize:m?12:14,color:C.sage,marginTop:2}},maxDD>30?"That's a stomach test. Could you hold through this?":maxDD>15?"Painful but recoverable.":"Relatively gentle decline.")
-        ):null
-      ),
-      hasReturns?e("div",{style:{background:C.white,border:"1px solid "+C.border,borderRadius:12,overflow:"hidden"}},
-        e("div",{style:{padding:m?"12px 14px":"14px 20px",borderBottom:"1px solid "+C.border,background:C.cream}},
-          e("div",{style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,textTransform:"uppercase"}},"Calculated from live NAV data")
-        ),
-        e(ReturnRow,{label:"1 Day",v:liveReturns.d1,m:m}),
-        e(ReturnRow,{label:"1 Week",v:liveReturns.w1,m:m}),
-        e(ReturnRow,{label:"1 Month",v:liveReturns.m1,m:m}),
-        e(ReturnRow,{label:"3 Months",v:liveReturns.m3,m:m}),
-        e(ReturnRow,{label:"6 Months",v:liveReturns.m6,m:m}),
-        e(ReturnRow,{label:"1 Year",v:liveReturns.y1,note:liveReturns.y1!==null?(liveReturns.y1>15?"Strong year":"Meh year"):null,m:m,highlight:true}),
-        e(ReturnRow,{label:"3Y CAGR",v:liveReturns.y3,m:m}),
-        e(ReturnRow,{label:"5Y CAGR",v:liveReturns.y5,m:m,last:true})
-      ):null
-    ),
-    e("div",{style:{background:C.sage+"08",border:"1px solid "+C.sage+"20",borderRadius:12,padding:m?16:20}},
-      e("p",{style:{fontFamily:Bf,fontSize:m?12:13,color:C.body,margin:0,lineHeight:1.6}},"This fund hasn't been through our full editorial review yet. Numbers are calculated live from NAV data. Deep-dive analysis with holdings, commentary, and honest opinions is available for ",e("span",{onClick:function(){go("/house/ppfas");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}},"PPFAS")," and ",e("span",{onClick:function(){go("/house/quant");},style:{color:C.sage,cursor:"pointer",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3}},"Quant"),". More fund houses coming soon.")
-    )
-  );
+  return e(DynamicSchemePage,{code:p.id});
 }
 
 function CalcPage() {
