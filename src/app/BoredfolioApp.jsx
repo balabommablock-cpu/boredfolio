@@ -86,6 +86,13 @@ var amcToEditorialSlug = function(amcName) {
 };
 
 // ── Hooks ──
+function useTitle(title) {
+  useEffect(function() {
+    if (title) document.title = title + " | Boredfolio";
+    return function() { document.title = "Boredfolio — India's Most Honest Mutual Fund Platform"; };
+  }, [title]);
+}
+
 function useVis(t) {
   var threshold = t || 0.12;
   var ref = useRef(null);
@@ -752,6 +759,7 @@ function SchemeRow(p) {
 
 function FundHousePage(p) {
   var house=p.slug==="ppfas"?PPFAS:p.slug==="quant"?QUANT:null;
+  useTitle(house ? house.name + " — Fund House Profile" : null);
   var go=useGo(),m=useW()<768; var _r=useVis(0.05),ref=_r[0],vis=_r[1];
   if(!house) return e(DynamicHousePage,{slug:p.slug});
   return e("div",{style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
@@ -885,6 +893,8 @@ function DynamicHousePage(p) {
     }
   }
 
+  useTitle(amc ? amc.name + " — All Schemes, Live NAV & Returns" : null);
+
   useEffect(function() {
     if (!allFunds.loading && amc) {
       var t = setTimeout(function() { setVis(true); }, 60);
@@ -995,6 +1005,7 @@ function DynamicHousePage(p) {
 function DynamicSchemePage(p) {
   var fd = useFund(p.code);
   var go = useGo(), m = useW() < 768;
+  useTitle(fd.data && fd.data.meta && fd.data.meta.scheme_name ? fd.data.meta.scheme_name + " — Live NAV & Returns" : null);
   var _v = useState(false), vis = _v[0], setVis = _v[1];
   useEffect(function(){
     if(!fd.loading && fd.data && fd.data.meta && fd.data.meta.scheme_name){
@@ -1120,6 +1131,7 @@ function DynamicSchemePage(p) {
 function SchemePage(p) {
   var house=p.houseSlug==="ppfas"?PPFAS:p.houseSlug==="quant"?QUANT:null;
   var scheme=house?house.schemes.find(function(s){return s.code===p.code;}):null;
+  useTitle(scheme ? scheme.name + " — Full Analysis" : null);
   var fd=useFund(p.code); var go=useGo(),m=useW()<768;
   var _r=useVis(0.05),ref=_r[0],vis=_r[1]; var _sa=useState(false),showAll=_sa[0],setSA=_sa[1];
   if(!scheme) return e(DynamicSchemePage,{code:p.code});
@@ -1350,6 +1362,7 @@ function Shell(p) {
 }
 
 function ExplorePage() {
+  useTitle("Explore Every Mutual Fund in India");
   var _q=useState(""),q=_q[0],sq=_q[1]; var _r=useState(null),res=_r[0],sr=_r[1]; var _l=useState(false),ld=_l[0],sld=_l[1];
   var _f=useState(""),filter=_f[0],setFilter=_f[1];
   var _sa=useState(false),showAll=_sa[0],setShowAll=_sa[1];
@@ -1441,6 +1454,7 @@ function FundPage(p) {
 }
 
 function CalcPage() {
+  useTitle("SIP Calculator — See What Compounding Actually Does");
   var _m=useState(10000),mo=_m[0],smo=_m[1]; var _r=useState(12),rate=_r[0],sr=_r[1]; var _y=useState(10),yrs=_y[0],sy=_y[1]; var m=useW()<768;
   var inv=mo*12*yrs,corp=sipFV(mo,rate,yrs),gain=corp-inv;
   return e(Shell,{label:"Calculator",title:"The money machine"},
@@ -1460,6 +1474,7 @@ function CalcPage() {
 }
 
 function ManifestoPage() {
+  useTitle("Manifesto — Why We Built This");
   var m=useW()<768;
   var blocks=[
     {t:"The confession",b:"India has ₹68 lakh crore in mutual funds. Most owners can't name a single stock inside them. Not because they're careless — because the system was designed this way."},
@@ -1583,6 +1598,7 @@ var ARTICLES = [
 ];
 
 function LearnPage() {
+  useTitle("Learn — Mutual Fund Education Without the Sales Pitch");
   var go=useGo(),m=useW()<768;
   var _r=useVis(0.05),ref=_r[0],vis=_r[1];
   return e("div",{style:{paddingTop:m?80:100,minHeight:"80vh",paddingBottom:60}},
@@ -1652,6 +1668,7 @@ function LearnPage() {
 function LearnArticlePage(p) {
   var go=useGo(),m=useW()<768;
   var article=ARTICLES.find(function(a){return a.slug===p.slug;});
+  useTitle(article ? article.title : "Article Not Found");
   var _r=useVis(0.05),ref=_r[0],vis=_r[1];
 
   if(!article) return e(Shell,{label:"Learn",title:"Article not found.",sub:"It might have been moved or doesn't exist yet."},
