@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Best ELSS Tax Saving Mutual Funds 2025 — Last Date March 31 | Boredfolio",
+  title: "Best ELSS Tax Saving Mutual Funds 2025 — Last Date March 31",
   description:
     "Compare all ELSS tax saver mutual funds in India. Save up to ₹46,800 in tax under Section 80C. Direct plans only. Updated daily with real NAV data. March 31 deadline approaching.",
   keywords: [

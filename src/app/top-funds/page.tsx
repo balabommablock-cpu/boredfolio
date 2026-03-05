@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Top Mutual Funds India 2025 — Ranked by Real Returns | Boredfolio",
+  title: "Top Mutual Funds India 2025 — Ranked by Real Returns",
   description:
     "No-BS rankings of India's best mutual funds. ELSS tax savers, large cap, flexi cap, small cap — sorted by 1-year returns with real NAV data. Updated daily.",
   openGraph: {
