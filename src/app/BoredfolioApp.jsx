@@ -1352,15 +1352,18 @@ function Shell(p) {
 function ExplorePage() {
   var _q=useState(""),q=_q[0],sq=_q[1]; var _r=useState(null),res=_r[0],sr=_r[1]; var _l=useState(false),ld=_l[0],sld=_l[1];
   var _f=useState(""),filter=_f[0],setFilter=_f[1];
+  var _sa=useState(false),showAll=_sa[0],setShowAll=_sa[1];
   var go=useGo(),m=useW()<768;
   var allFunds=useAllFunds();
   var search = useCallback(function(){ if(!q.trim())return; sld(true); fetch("https://api.mfapi.in/mf/search?q="+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(j){sr(j.slice(0,20));}).catch(function(){sr([]);}).finally(function(){sld(false);}); },[q]);
 
-  var filteredFunds = allFunds.funds ? allFunds.funds.filter(function(amc) {
+  var activeFunds = allFunds.funds ? allFunds.funds.filter(function(amc) { return amc.editorialSlug || amc.schemes.length >= 10; }) : [];
+  var displayFunds = showAll ? allFunds.funds || [] : activeFunds;
+  var filteredFunds = displayFunds.filter(function(amc) {
     if (!filter.trim()) return true;
     return amc.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-  }) : [];
-  var totalAMCs = allFunds.funds ? allFunds.funds.length : 0;
+  });
+  var totalAMCs = activeFunds.length;
   var totalSchemes = allFunds.funds ? allFunds.funds.reduce(function(sum, amc) { return sum + amc.schemes.length; }, 0) : 0;
 
   return e(Shell,{label:"Explore",title:"Every mutual fund in India.",
@@ -1382,8 +1385,14 @@ function ExplorePage() {
     // AMC grid (when no search results active)
     !res?e("div",{style:{marginTop:20}},
       e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:m?"flex-start":"center",flexDirection:m?"column":"row",gap:12,marginBottom:16}},
-        e("p",{style:{fontFamily:Bf,fontSize:13,color:C.light,margin:0}},
-          allFunds.loading ? "Loading fund houses..." : "All "+totalAMCs+" fund houses"
+        e("div",{style:{display:"flex",alignItems:"center",gap:12}},
+          e("p",{style:{fontFamily:Bf,fontSize:13,color:C.light,margin:0}},
+            allFunds.loading ? "Loading fund houses..." : showAll ? "All "+(allFunds.funds?allFunds.funds.length:0)+" fund houses" : totalAMCs+" active fund houses"
+          ),
+          !allFunds.loading && allFunds.funds && allFunds.funds.length > totalAMCs ? e("button",{
+            onClick:function(){setShowAll(!showAll);},
+            style:{fontFamily:Mf,fontSize:10,color:C.sage,background:"none",border:"1px solid "+C.sage+"40",padding:"4px 10px",borderRadius:4,cursor:"pointer",letterSpacing:0.5}
+          },showAll?"Hide historical":"Show all "+allFunds.funds.length) : null
         ),
         !allFunds.loading && totalAMCs > 10 ? e("input",{
           value:filter,
