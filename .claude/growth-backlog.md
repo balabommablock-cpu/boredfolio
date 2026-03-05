@@ -6,7 +6,7 @@
 ## 🔴 P0 — Do Next (highest leverage)
 
 - [x] **SEO Foundation** — sitemap.xml, robots.txt, Vercel Analytics, per-page meta for dynamic routes [opus for architecture, haiku for file creation]
-- [ ] **Direct vs Regular Calculator** — #1 searched MF topic in India. Input amount + years → show exact ₹ difference. New page at /direct-vs-regular [opus]
+- [x] **Direct vs Regular Calculator** — #1 searched MF topic in India. Input amount + years → show exact ₹ difference. New page at /direct-vs-regular [opus]
 - [ ] **Per-Fund SEO Pages** — dynamic meta title/description for /fund/:code and /house/:slug so Google indexes each fund individually [sonnet]
 - [ ] **5 More Learn Articles** — target: "what is expense ratio", "best SIP for beginners", "how to switch to direct plan", "index fund vs active fund", "what is NAV" [opus for writing, haiku for file ops]
 
