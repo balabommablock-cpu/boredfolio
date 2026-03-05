@@ -473,7 +473,7 @@ function Hero() {
     return e("section",{style:{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center"}},
       e(Wrap,null,
         e(A,{vis:true,delay:0},
-          e("div",{style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:24,textTransform:"uppercase"}},"Pop quiz — no googling")
+          e("div",{style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:24,textTransform:"uppercase"}},"Pop quiz — no googling allowed")
         ),
         e(A,{vis:true,delay:0.15},
           e("h1",{style:{fontFamily:Sf,fontSize:m?32:64,fontWeight:400,color:C.char,lineHeight:1.08,margin:"0 0 32px",maxWidth:720}},
@@ -496,7 +496,7 @@ function Hero() {
   return e("section",{style:{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center"}},
     e(Wrap,null,
       e(A,{vis:true,delay:0},
-        e("div",{style:{fontFamily:Hf,fontSize:m?17:22,color:C.red,marginBottom:16}}, typed ? '"'+typed+'" — solid guess. But what about the other 47 stocks you own and didn\'t pick?' : "Thought so.")
+        e("div",{style:{fontFamily:Hf,fontSize:m?17:22,color:C.red,marginBottom:16}}, typed ? '"'+typed+'" — sure. Now name the other 47 stocks you own and didn\'t pick.' : "Yeah. That's the whole point.")
       ),
       e(A,{vis:true,delay:0.2},
         e("h1",{style:{fontFamily:Sf,fontSize:m?32:64,fontWeight:400,color:C.char,lineHeight:1.08,margin:"0 0 20px",maxWidth:780}},
@@ -505,7 +505,7 @@ function Hero() {
         )
       ),
       e(A,{vis:true,delay:0.35},
-        e("p",{style:{fontFamily:Bf,fontSize:m?15:17,color:C.muted,lineHeight:1.7,maxWidth:500,margin:"0 0 32px"}},"Boredfolio tells you what your mutual fund actually holds, what it costs, and whether the manager is earning their fee. No jargon. No commissions. No reason to lie to you.")
+        e("p",{style:{fontFamily:Bf,fontSize:m?15:17,color:C.muted,lineHeight:1.7,maxWidth:500,margin:"0 0 32px"}},"We show you what your fund actually holds, what it actually costs, and whether the manager actually earned their fee. No jargon. No commissions. No reason to lie.")
       ),
       e(A,{vis:true,delay:0.45},
         e("div",{style:{display:"flex",gap:12,flexWrap:"wrap"}},
@@ -562,10 +562,10 @@ function BigNumber() {
   var _r=useVis(0.2),ref=_r[0],vis=_r[1]; var m=useW()<768;
   return e("section",{ref:ref,style:{padding:m?"72px 0":"120px 0",textAlign:"center"}},
     e(Wrap,null,
-      e(A,{vis:vis,delay:0.1},e("div",{style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:4,color:C.red,marginBottom:16,textTransform:"uppercase"}},"The number nobody discusses")),
+      e(A,{vis:vis,delay:0.1},e("div",{style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:4,color:C.red,marginBottom:16,textTransform:"uppercase"}},"The number they hope you never google")),
       e(A,{vis:vis,delay:0.2},e("div",{style:{fontFamily:Mf,fontSize:m?44:100,fontWeight:700,color:C.char,letterSpacing:-3,lineHeight:1,marginBottom:8}},"₹50,000 Cr")),
       e(A,{vis:vis,delay:0.3},e("p",{style:{fontFamily:Hf,fontSize:m?18:24,color:C.red,marginBottom:14}},"(every single year)")),
-      e(A,{vis:vis,delay:0.35},e("p",{style:{fontFamily:Sf,fontSize:m?18:28,fontWeight:400,color:C.muted,lineHeight:1.45,maxWidth:520,margin:"0 auto"}},"That's what India's mutual fund industry collects in fees. Every year. From your returns. Whether they beat the index or not."))
+      e(A,{vis:vis,delay:0.35},e("p",{style:{fontFamily:Sf,fontSize:m?18:28,fontWeight:400,color:C.muted,lineHeight:1.45,maxWidth:520,margin:"0 auto"}},"That's what India's mutual fund industry skims off your returns. Every single year. Whether they beat the index or not."))
     )
   );
 }
@@ -574,13 +574,13 @@ function Comparison() {
   var _r=useVis(),ref=_r[0],vis=_r[1]; var m=useW()<768; var sv=sipFV(500,12,10);
   return e("section",{ref:ref,style:{padding:m?"64px 0":"100px 0",background:C.char}},
     e(Wrap,null,
-      e(A,{vis:vis,delay:0.1},e("h2",{style:{fontFamily:Sf,fontSize:m?24:38,fontWeight:400,color:C.cream,lineHeight:1.15,margin:"0 0 36px"}},"Same ₹500/month. ",e("span",{style:{fontStyle:"italic",opacity:0.5}},"Very different outcomes."))),
+      e(A,{vis:vis,delay:0.1},e("h2",{style:{fontFamily:Sf,fontSize:m?24:38,fontWeight:400,color:C.cream,lineHeight:1.15,margin:"0 0 36px"}},"Same ₹500/month. ",e("span",{style:{fontStyle:"italic",opacity:0.5}},"Very different futures."))),
       e(A,{vis:vis,delay:0.2},
         e("div",{style:{display:"grid",gridTemplateColumns:m?"1fr":"1fr 50px 1fr",gap:m?16:0,alignItems:"center"}},
           e("div",{style:{background:C.red+"15",border:"1px solid "+C.red+"30",borderRadius:12,padding:m?20:28,textAlign:"center"}},
             e("div",{style:{fontFamily:Bf,fontSize:13,color:C.red,fontWeight:600,marginBottom:8}},"₹500/month on food delivery"),
             e("div",{style:{fontFamily:Mf,fontSize:m?24:32,fontWeight:700,color:C.cream,marginBottom:6}},"₹"+fI(60000)),
-            e("div",{style:{fontFamily:Bf,fontSize:12,color:C.light,lineHeight:1.5}},"Spent. Gone. 90% forgotten.")
+            e("div",{style:{fontFamily:Bf,fontSize:12,color:C.light,lineHeight:1.5}},"Spent. Gone. Can you even name last Tuesday's order?")
           ),
           e("div",{style:{textAlign:"center"}},e("span",{style:{fontFamily:Sf,fontSize:22,fontStyle:"italic",color:C.muted}},"vs")),
           e("div",{style:{background:C.green+"15",border:"1px solid "+C.green+"30",borderRadius:12,padding:m?20:28,textAlign:"center"}},
@@ -661,9 +661,9 @@ function FundProfiles() {
         e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:32,flexWrap:"wrap",gap:12}},
           e("div",null,
             e("div",{style:{fontFamily:Mf,fontSize:m?9:10,fontWeight:600,letterSpacing:3,color:C.sage,marginBottom:8,textTransform:"uppercase",display:"flex",alignItems:"center",gap:8}},e("span",{style:{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 2s ease-in-out infinite"}}),"Live from mfapi.in"),
-            e("h2",{style:{fontFamily:Sf,fontSize:m?26:38,fontWeight:400,color:C.char,margin:0,lineHeight:1.12}},"Three funds. ",e("span",{style:{fontStyle:"italic",color:C.muted}},"Unfiltered."))
+            e("h2",{style:{fontFamily:Sf,fontSize:m?26:38,fontWeight:400,color:C.char,margin:0,lineHeight:1.12}},"Three funds. ",e("span",{style:{fontStyle:"italic",color:C.muted}},"Zero sugar-coating."))
           ),
-          e("span",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:600,color:C.sage,cursor:"pointer",textDecoration:"underline",textUnderlineOffset:4}},"All 12,247 →")
+          e("span",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:600,color:C.sage,cursor:"pointer",textDecoration:"underline",textUnderlineOffset:4}},"See all funds →")
         )
       ),
       e(A,{vis:vis,delay:0.2},
@@ -731,7 +731,7 @@ function Closing() {
       e(A,{vis:vis,delay:0.2},e("p",{style:{fontFamily:Hf,fontSize:m?17:22,color:"rgba(255,255,255,0.45)",marginBottom:28}},"(no app to download. no KYC to complete. just clarity.)")),
       e(A,{vis:vis,delay:0.3},e("div",{style:{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}},
         e("button",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.sage,background:C.cream,border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer"}},"Explore your funds"),
-        e("button",{onClick:function(){go("/house/ppfas");},style:{fontFamily:Bf,fontSize:14,fontWeight:600,color:C.cream,background:"transparent",border:"1.5px solid rgba(255,255,255,0.3)",padding:"14px 32px",borderRadius:8,cursor:"pointer"}},"Meet PPFAS →")
+        e("button",{onClick:function(){go("/manifesto");},style:{fontFamily:Bf,fontSize:14,fontWeight:600,color:C.cream,background:"transparent",border:"1.5px solid rgba(255,255,255,0.3)",padding:"14px 32px",borderRadius:8,cursor:"pointer"}},"Why we built this →")
       ))
     )
   );
