@@ -404,11 +404,12 @@ function Navbar(p) {
             e("span",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,color:C.light,cursor:"pointer",fontWeight:500}},"Explore"),
             e("span",{onClick:function(){go("/learn");},style:{fontFamily:Bf,fontSize:13,color:C.light,cursor:"pointer",fontWeight:500}},"Learn"),
             e("span",{onClick:function(){go("/calculator");},style:{fontFamily:Bf,fontSize:13,color:C.light,cursor:"pointer",fontWeight:500}},"Calculator"),
+            e("a",{href:"/roast",style:{fontFamily:Bf,fontSize:13,color:C.red,cursor:"pointer",fontWeight:600,textDecoration:"none"}},"Roast 🔥"),
             e("button",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:13,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"10px 22px",borderRadius:8,cursor:"pointer"}},"Explore funds")
           )
     ),
     m&&mo ? e("div",{style:{position:"fixed",inset:0,background:C.cream,zIndex:999,padding:"100px 28px",animation:"fadeIn 0.3s ease"}},
-      ["Explore","Learn","Calculator","Manifesto"].map(function(t){return e("div",{key:t,onClick:function(){go("/"+t.toLowerCase());},style:{fontFamily:Sf,fontSize:36,color:C.char,padding:"18px 0",borderBottom:"1px solid "+C.border,cursor:"pointer"}},t);})
+      ["Explore","Learn","Calculator","Roast 🔥","Manifesto"].map(function(t){var lbl=t.replace(" 🔥","");return e("div",{key:t,onClick:function(){if(lbl==="Roast"){window.location.href="/roast";}else{go("/"+lbl.toLowerCase());}},style:{fontFamily:Sf,fontSize:36,color:lbl==="Roast"?C.red:C.char,padding:"18px 0",borderBottom:"1px solid "+C.border,cursor:"pointer"}},t);})
     ) : null
   );
 }
@@ -432,7 +433,7 @@ function Footer() {
           ),
           e("div",null,
             e("div",{style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,marginBottom:10,textTransform:"uppercase"}},"More"),
-            ["Calculator|/calculator","Direct vs Regular|/direct-vs-regular","Manifesto|/manifesto","Rankings|/top-funds"].map(function(x){var p=x.split("|"); return e("div",{key:p[1],onClick:function(){go(p[1]);},style:{fontFamily:Bf,fontSize:13,color:C.muted,marginBottom:8,cursor:"pointer",padding:"2px 0"}},p[0]);})
+            ["Roast Your Fund|/roast","Calculator|/calculator","Direct vs Regular|/direct-vs-regular","Manifesto|/manifesto","Rankings|/top-funds"].map(function(x){var p=x.split("|"); return e("div",{key:p[1],onClick:function(){go(p[1]);},style:{fontFamily:Bf,fontSize:13,color:C.muted,marginBottom:8,cursor:"pointer",padding:"2px 0"}},p[0]);})
           )
         )
       ),
@@ -738,6 +739,7 @@ function Closing() {
       e(A,{vis:vis,delay:0.2},e("p",{style:{fontFamily:Hf,fontSize:m?17:22,color:"rgba(255,255,255,0.45)",marginBottom:28}},"(no app to download. no KYC to complete. just clarity.)")),
       e(A,{vis:vis,delay:0.3},e("div",{style:{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}},
         e("button",{onClick:function(){go("/explore");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.sage,background:C.cream,border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer"}},"Explore your funds"),
+        e("a",{href:"/roast",style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.red,border:"none",padding:"14px 32px",borderRadius:8,cursor:"pointer",textDecoration:"none",display:"inline-block"}},"🔥 Roast your fund"),
         e("button",{onClick:function(){go("/manifesto");},style:{fontFamily:Bf,fontSize:14,fontWeight:600,color:C.cream,background:"transparent",border:"1.5px solid rgba(255,255,255,0.3)",padding:"14px 32px",borderRadius:8,cursor:"pointer"}},"Why we built this →")
       ))
     )

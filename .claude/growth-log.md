@@ -50,3 +50,50 @@
 **Next session:** Per-Fund SEO Pages (P0 #3) or 5 More Learn Articles (P0 #4).
 
 ---
+
+### 2026-03-05 — Session 3 (Strategist execution: Day 1)
+**Trigger:** User shared boredfolio_STRATEGIST.md — mission to reach 1M visitors in 30 days.
+
+**Shipped:**
+- **AI Fund Roast Generator** (`/roast` + `/api/roast`)
+  - Gemini 2.0 Flash-powered roast API with retry logic, model fallback chain, 1hr caching
+  - Full standalone page: search autocomplete from mfapi.in, dark roast card (headline, stats bar, roast paragraphs, verdict)
+  - WhatsApp share (primary) + X share buttons
+  - "Roast another fund" loop + CTA to full fund analysis
+  - Graceful error handling for rate limits ("Our AI roaster is taking a chai break ☕")
+  - *Note: Gemini free tier daily quota was exhausted during testing — will work on reset*
+
+- **Top Mutual Funds SEO Page** (`/top-funds`)
+  - Server-rendered page with 7 fund categories: ELSS, Large Cap, Flexi Cap, Mid Cap, Small Cap, Index, Debt
+  - Each category shows up to 15 Direct-Growth schemes from mfapi.in (real data, ISR-cached hourly)
+  - Category descriptions in Boredfolio voice. Links to individual fund analysis pages
+  - CTA to Roast at bottom
+
+- **ELSS Tax Saver Landing Page** (`/elss-tax-saver`)
+  - Time-sensitive: March 31 deadline banner with countdown
+  - Key stats cards: ₹46,800/yr tax saved, 3-year lock-in, ₹1.5L max deduction
+  - ELSS vs PPF vs NPS vs FD vs SSY comparison table
+  - All ELSS Direct-Growth schemes listed with links
+  - "How to Pick an ELSS Fund" guide (4 steps)
+  - CTA to roast your ELSS fund
+
+- **Navigation updates** (BoredfolioApp.jsx — 4 lines added)
+  - "Roast 🔥" link in desktop navbar (red, stands out)
+  - "Roast 🔥" in mobile hamburger menu
+  - "Roast Your Fund" in footer "More" section
+  - "🔥 Roast your fund" CTA button in homepage Closing section
+
+- **Sitemap expanded** to 25 URLs (added /elss-tax-saver, bumped /top-funds priority)
+
+- **Strategy & Plan docs** written (`docs/strategy.md`, `docs/plan.md`)
+
+**Impact:**
+- Roast tool is THE viral feature — generates personalized, shareable content for every one of 37K+ schemes
+- ELSS page targets "best ELSS funds 2025" — peak search season (March tax deadline)
+- Top Funds page creates 7 category landings for programmatic SEO
+- All pages are server-rendered for instant Google indexing
+- Every page funnels to Roast (the share mechanic)
+
+**Next session:** Test Gemini API once quota resets. Build programmatic per-fund SEO pages. Hindi audio roasts via Sarvam TTS.
+
+---
