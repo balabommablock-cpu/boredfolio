@@ -432,7 +432,7 @@ function Footer() {
           ),
           e("div",null,
             e("div",{style:{fontFamily:Mf,fontSize:9,letterSpacing:2,color:C.light,marginBottom:10,textTransform:"uppercase"}},"More"),
-            ["Calculator|/calculator","Manifesto|/manifesto","Rankings|/top-funds"].map(function(x){var p=x.split("|"); return e("div",{key:p[1],onClick:function(){go(p[1]);},style:{fontFamily:Bf,fontSize:13,color:C.muted,marginBottom:8,cursor:"pointer",padding:"2px 0"}},p[0]);})
+            ["Calculator|/calculator","Direct vs Regular|/direct-vs-regular","Manifesto|/manifesto","Rankings|/top-funds"].map(function(x){var p=x.split("|"); return e("div",{key:p[1],onClick:function(){go(p[1]);},style:{fontFamily:Bf,fontSize:13,color:C.muted,marginBottom:8,cursor:"pointer",padding:"2px 0"}},p[0]);})
           )
         )
       ),
@@ -1473,6 +1473,114 @@ function CalcPage() {
   );
 }
 
+function DirectVsRegularPage() {
+  useTitle("Direct vs Regular Plan — The ₹ You Lose to Your Distributor");
+  var _m=useState(10000),mo=_m[0],smo=_m[1];
+  var _y=useState(20),yrs=_y[0],sy=_y[1];
+  var _ret=useState(12),ret=_ret[0],sret=_ret[1];
+  var _gap=useState(0.7),gap=_gap[0],sgap=_gap[1];
+  var go=useGo(),m=useW()<768;
+
+  // Direct = full return minus direct TER (~0.5%)
+  // Regular = full return minus regular TER (~1.2%)
+  // We let user set the gap (regular TER - direct TER)
+  var directReturn = ret;
+  var regularReturn = ret - gap;
+  var directCorpus = sipFV(mo, directReturn, yrs);
+  var regularCorpus = sipFV(mo, regularReturn, yrs);
+  var diff = directCorpus - regularCorpus;
+  var invested = mo * 12 * yrs;
+  var diffPct = regularCorpus > 0 ? ((diff / regularCorpus) * 100).toFixed(0) : 0;
+
+  var slider = function(label, val, setter, min, max, step, fmt) {
+    return e("div",{style:{marginBottom:20}},
+      e("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:8}},
+        e("span",{style:{fontFamily:Bf,fontSize:12,color:C.muted}},label),
+        e("span",{style:{fontFamily:Mf,fontSize:m?16:20,fontWeight:700,color:C.char}},fmt)
+      ),
+      e("input",{type:"range",min:min,max:max,step:step,value:val,onChange:function(ev){setter(Number(ev.target.value));},
+        style:{width:"100%",height:6,WebkitAppearance:"none",appearance:"none",background:"linear-gradient(to right, "+C.sage+" "+((val-min)/(max-min)*100)+"%, "+C.border+" "+((val-min)/(max-min)*100)+"%)",borderRadius:3,outline:"none",cursor:"pointer"}})
+    );
+  };
+
+  return e(Shell,{label:"Calculator",title:"The ₹14 lakh question.",
+    sub:"Same fund. Same stocks. Same manager. Two different expense ratios. One makes your distributor rich."},
+
+    // Sliders
+    e("div",{style:{background:C.white,border:"1px solid "+C.border,borderRadius:10,padding:m?20:32,maxWidth:600,marginBottom:28}},
+      slider("Monthly SIP", mo, smo, 500, 200000, 500, "₹"+fI(mo)),
+      slider("Investment period", yrs, sy, 1, 30, 1, yrs+" years"),
+      slider("Expected return (pre-TER)", ret, sret, 8, 18, 0.5, ret+"%"),
+      slider("TER gap (Regular − Direct)", gap, sgap, 0.3, 1.5, 0.1, gap.toFixed(1)+"%"),
+      e("p",{style:{fontFamily:Hf,fontSize:m?13:15,color:C.sage,margin:"8px 0 0"}},"(average equity fund gap: 0.5%–1.0%. some go up to 1.5%.)")
+    ),
+
+    // Results: two columns
+    e("div",{style:{display:"grid",gridTemplateColumns:m?"1fr":"1fr 1fr",gap:16,marginBottom:28}},
+      // Direct
+      e("div",{style:{background:C.gBg,border:"1px solid "+C.green+"30",borderRadius:10,padding:m?20:28,textAlign:"center"}},
+        e("div",{style:{fontFamily:Mf,fontSize:9,fontWeight:700,letterSpacing:2,color:C.green,textTransform:"uppercase",marginBottom:12}},"Direct Plan"),
+        e("div",{style:{fontFamily:Mf,fontSize:m?28:36,fontWeight:700,color:C.char,letterSpacing:-1}},"₹"+fI(directCorpus)),
+        e("div",{style:{fontFamily:Bf,fontSize:12,color:C.muted,marginTop:6}},"Effective return: "+directReturn.toFixed(1)+"%"),
+        e("div",{style:{fontFamily:Bf,fontSize:11,color:C.light,marginTop:2}},"You invested ₹"+fI(invested))
+      ),
+      // Regular
+      e("div",{style:{background:C.rBg,border:"1px solid "+C.red+"30",borderRadius:10,padding:m?20:28,textAlign:"center"}},
+        e("div",{style:{fontFamily:Mf,fontSize:9,fontWeight:700,letterSpacing:2,color:C.red,textTransform:"uppercase",marginBottom:12}},"Regular Plan"),
+        e("div",{style:{fontFamily:Mf,fontSize:m?28:36,fontWeight:700,color:C.char,letterSpacing:-1}},"₹"+fI(regularCorpus)),
+        e("div",{style:{fontFamily:Bf,fontSize:12,color:C.muted,marginTop:6}},"Effective return: "+regularReturn.toFixed(1)+"%"),
+        e("div",{style:{fontFamily:Bf,fontSize:11,color:C.light,marginTop:2}},"Same stocks. Higher fee.")
+      )
+    ),
+
+    // The damage
+    e("div",{style:{background:C.char,borderRadius:12,padding:m?24:36,textAlign:"center",marginBottom:28}},
+      e("div",{style:{fontFamily:Mf,fontSize:9,fontWeight:700,letterSpacing:3,color:C.red,textTransform:"uppercase",marginBottom:12}},"What your distributor takes"),
+      e("div",{style:{fontFamily:Mf,fontSize:m?36:56,fontWeight:700,color:C.cream,letterSpacing:-2,lineHeight:1}},"₹"+fI(diff)),
+      e("div",{style:{fontFamily:Hf,fontSize:m?18:24,color:C.red,marginTop:12}},diffPct+"% of your Regular plan corpus. Gone."),
+      e("div",{style:{fontFamily:Bf,fontSize:13,color:C.light,marginTop:12,lineHeight:1.6,maxWidth:420,margin:"12px auto 0"}},
+        "That's "+gap.toFixed(1)+"% every year, compounded over "+yrs+" years. Your distributor earned this for filling a form you could've filled yourself."
+      )
+    ),
+
+    // The table
+    e("div",{style:{background:C.white,border:"1px solid "+C.border,borderRadius:10,overflow:"hidden",marginBottom:28}},
+      e("div",{style:{padding:"14px 20px",borderBottom:"1px solid "+C.border,background:C.cream}},
+        e("div",{style:{fontFamily:Mf,fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.light}},"Year-by-year damage")
+      ),
+      [5,10,15,20,25,30].filter(function(y){return y<=yrs;}).map(function(y,i,arr) {
+        var dc = sipFV(mo, directReturn, y);
+        var rc = sipFV(mo, regularReturn, y);
+        var d = dc - rc;
+        return e("div",{key:y,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 20px",borderBottom:i<arr.length-1?"1px solid "+C.border:"none"}},
+          e("span",{style:{fontFamily:Bf,fontSize:13,color:C.char,fontWeight:600}},y+" years"),
+          e("span",{style:{fontFamily:Mf,fontSize:13,fontWeight:700,color:C.red}},"−₹"+fI(d))
+        );
+      })
+    ),
+
+    // Explainer
+    e("div",{style:{background:C.cream,border:"1px solid "+C.border,borderRadius:10,padding:m?20:28,marginBottom:28}},
+      e("div",{style:{fontFamily:Sf,fontSize:m?18:22,fontWeight:400,color:C.char,marginBottom:12}},"Wait — what's the actual difference?"),
+      e("p",{style:{fontFamily:Bf,fontSize:14,color:C.muted,lineHeight:1.7,marginBottom:12}},
+        "Every mutual fund has two versions: Direct and Regular. Same stocks. Same manager. Same portfolio. The only difference is the expense ratio."
+      ),
+      e("p",{style:{fontFamily:Bf,fontSize:14,color:C.muted,lineHeight:1.7,marginBottom:12}},
+        "Regular plans pay a commission to your distributor (bank, app, advisor) — typically 0.5% to 1.5% per year. That comes out of your returns. Direct plans skip the middleman, so you keep more."
+      ),
+      e("p",{style:{fontFamily:Bf,fontSize:14,color:C.char,fontWeight:600,lineHeight:1.7}},
+        "Switching is free. You can do it on AMC websites, MFCentral, or apps like Kuvera and Zerodha Coin."
+      )
+    ),
+
+    // CTAs
+    e("div",{style:{display:"flex",gap:12,flexWrap:"wrap"}},
+      e("button",{onClick:function(){go("/learn/direct-vs-regular");},style:{fontFamily:Bf,fontSize:14,fontWeight:700,color:C.cream,background:C.char,border:"none",padding:"14px 28px",borderRadius:8,cursor:"pointer"}},"Read the full breakdown →"),
+      e("button",{onClick:function(){go("/calculator");},style:{fontFamily:Bf,fontSize:14,fontWeight:500,color:C.muted,background:"none",border:"1px solid "+C.border,padding:"14px 28px",borderRadius:8,cursor:"pointer"}},"SIP Calculator")
+    )
+  );
+}
+
 function ManifestoPage() {
   useTitle("Manifesto — Why We Built This");
   var m=useW()<768;
@@ -1775,6 +1883,7 @@ export default function App() {
   else if(page==="/learn") view=e(LearnPage);
   else if(page.indexOf("/learn/")===0) view=e(LearnArticlePage,{slug:page.split("/learn/")[1]});
   else if(page==="/calculator") view=e(CalcPage);
+  else if(page==="/direct-vs-regular") view=e(DirectVsRegularPage);
   else if(page==="/manifesto") view=e(ManifestoPage);
   else if(page==="/top-funds") view=e(Shell,{label:"Rankings",title:"The ones winning. For now."},TOP3.map(function(f,i){return e(LeaderItem,{key:f.r,f:f,i:i});}));
   else view=e(NotFound);

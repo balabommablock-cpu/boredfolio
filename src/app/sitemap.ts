@@ -9,6 +9,7 @@ const STATIC_ROUTES = [
   { path: "/house/ppfas", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/house/quant", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/calculator", priority: 0.7, changeFrequency: "monthly" as const },
+  { path: "/direct-vs-regular", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/manifesto", priority: 0.5, changeFrequency: "monthly" as const },
   { path: "/top-funds", priority: 0.7, changeFrequency: "weekly" as const },
   { path: "/learn", priority: 0.8, changeFrequency: "weekly" as const },
