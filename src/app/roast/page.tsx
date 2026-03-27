@@ -99,7 +99,10 @@ export default function RoastPage() {
             <span style={{ fontFamily: Sf, fontSize: 22, fontWeight: 400, fontStyle: "italic", color: C.sage }}>folio</span>
             <span style={{ fontFamily: Sf, fontSize: 22, fontWeight: 900, color: C.sage }}>.</span>
           </a>
-          <a href="/explore" style={{ fontFamily: Bf, fontSize: 13, color: C.muted, textDecoration: "none" }}>← Back to Explore</a>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <a href="/sarvam" style={{ fontFamily: Bf, fontSize: 13, color: "#E07A2F", fontWeight: 600, textDecoration: "none" }}>Hindi Audio Roast</a>
+            <a href="/explore" style={{ fontFamily: Bf, fontSize: 13, color: C.muted, textDecoration: "none" }}>← Back to Explore</a>
+          </div>
         </nav>
 
         {/* Hero */}
