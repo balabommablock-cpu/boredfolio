@@ -17,6 +17,14 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/kiraya", destination: "/bambaibhada", permanent: true },
+      { source: "/kiraya/:path*", destination: "/bambaibhada/:path*", permanent: true },
+      { source: "/padosi", destination: "/bambaibhada", permanent: true },
+      { source: "/padosi/:path*", destination: "/bambaibhada/:path*", permanent: true },
+    ];
+  },
 };
 
 module.exports = nextConfig;

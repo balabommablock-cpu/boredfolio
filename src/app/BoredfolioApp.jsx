@@ -195,7 +195,7 @@ function useAllFunds() {
 }
 
 function useW() {
-  var _s = useState(1200), w = _s[0], sw = _s[1];
+  var _s = useState(typeof window !== "undefined" ? window.innerWidth : 1200), w = _s[0], sw = _s[1];
   useEffect(function(){ sw(window.innerWidth); var h=function(){sw(window.innerWidth);}; window.addEventListener("resize",h); return function(){window.removeEventListener("resize",h);}; },[]);
   return w;
 }
