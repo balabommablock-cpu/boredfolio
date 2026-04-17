@@ -105,7 +105,9 @@ const KEYWORDS = new Set([
 
 function Highlight({ code }: { code: string }) {
   // Tokenize by simple regex into: strings, comments, keywords, identifiers, punctuation, numbers.
-  // Trade-off: intentionally naïve. Gets 90% of the look without shiki's bundle cost.
+  // Palette chosen to be restrained — muted violet for keywords/types, warm-beige strings,
+  // dim gold numbers. Avoids the saturated pink/green/yellow of a typical editor theme so the
+  // code block reads as editorial rather than "IDE screenshot".
   const tokenRe =
     /(`[^`]*`|'[^']*'|"[^"]*")|(\/\/[^\n]*)|(\b\d+(?:\.\d+)?\b)|(\b[a-zA-Z_$][a-zA-Z0-9_$]*\b)|(\s+)|(.)/g;
 
@@ -114,19 +116,19 @@ function Highlight({ code }: { code: string }) {
   let i = 0;
   while ((m = tokenRe.exec(code))) {
     const [full, str, cmt, num, ident, ws, punct] = m;
-    if (str) nodes.push(<span key={i++} style={{ color: "#A5E3A5" }}>{full}</span>);
-    else if (cmt) nodes.push(<span key={i++} style={{ color: "#6B7280", fontStyle: "italic" }}>{full}</span>);
-    else if (num) nodes.push(<span key={i++} style={{ color: "#FBBF77" }}>{full}</span>);
+    if (str) nodes.push(<span key={i++} style={{ color: "#C7D3A8" }}>{full}</span>);
+    else if (cmt) nodes.push(<span key={i++} style={{ color: "#52525B", fontStyle: "italic" }}>{full}</span>);
+    else if (num) nodes.push(<span key={i++} style={{ color: "#D6B58A" }}>{full}</span>);
     else if (ident) {
       if (KEYWORDS.has(full)) {
-        nodes.push(<span key={i++} style={{ color: "#F472B6" }}>{full}</span>);
+        nodes.push(<span key={i++} style={{ color: "#B4A1FF" }}>{full}</span>);
       } else if (/^[A-Z]/.test(full)) {
-        nodes.push(<span key={i++} style={{ color: "#A78BFA" }}>{full}</span>);
+        nodes.push(<span key={i++} style={{ color: "#8B7CFF" }}>{full}</span>);
       } else {
         nodes.push(<span key={i++} style={{ color: "#E5E7EB" }}>{full}</span>);
       }
     } else if (ws) nodes.push(ws);
-    else if (punct) nodes.push(<span key={i++} style={{ color: "#9CA3AF" }}>{full}</span>);
+    else if (punct) nodes.push(<span key={i++} style={{ color: "#8B8B93" }}>{full}</span>);
   }
   return <>{nodes}</>;
 }
@@ -145,12 +147,10 @@ export function FrameworkTabs() {
   return (
     <div
       style={{
-        borderRadius: 16,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "linear-gradient(180deg, rgba(20,20,28,0.9) 0%, rgba(10,10,15,0.9) 100%)",
+        borderRadius: 10,
+        border: "1px solid rgba(255,255,255,0.07)",
+        background: "#08080B",
         overflow: "hidden",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
       }}
     >
       {/* Tab bar */}
@@ -158,8 +158,7 @@ export function FrameworkTabs() {
         style={{
           display: "flex",
           alignItems: "center",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(255,255,255,0.02)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
         <div style={{ display: "flex", flex: 1 }}>
@@ -173,14 +172,15 @@ export function FrameworkTabs() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  padding: "14px 20px",
+                  padding: "13px 18px",
                   fontSize: 13,
                   fontWeight: 500,
                   fontFamily: "inherit",
-                  color: isActive ? "#FAFAFA" : "#71717A",
+                  color: isActive ? "#F7F7F8" : "#71717A",
                   cursor: "pointer",
                   position: "relative",
                   transition: "color 0.15s",
+                  letterSpacing: "-0.005em",
                 }}
               >
                 {t.label}
@@ -188,11 +188,11 @@ export function FrameworkTabs() {
                   <div
                     style={{
                       position: "absolute",
-                      left: 16,
-                      right: 16,
+                      left: 14,
+                      right: 14,
                       bottom: -1,
-                      height: 2,
-                      background: "linear-gradient(90deg, #6366F1, #EC4899)",
+                      height: 1.5,
+                      background: "#8B7CFF",
                       borderRadius: 2,
                     }}
                   />
@@ -205,27 +205,28 @@ export function FrameworkTabs() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 12,
-            paddingRight: 12,
+            gap: 10,
+            paddingRight: 10,
           }}
         >
-          <span style={{ fontSize: 12, color: "#52525B", fontFamily: "var(--font-mono, monospace)" }}>
+          <span style={{ fontSize: 11, color: "#52525B", fontFamily: "var(--font-mono, monospace)", letterSpacing: "0.04em" }}>
             {tab.filename}
           </span>
           <button
             type="button"
             onClick={onCopy}
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: copied ? "#10B981" : "#A1A1AA",
-              fontSize: 12,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              color: copied ? "#7FD1A8" : "#A1A1AA",
+              fontSize: 11,
               fontWeight: 500,
               fontFamily: "inherit",
-              padding: "6px 10px",
-              borderRadius: 6,
+              padding: "5px 10px",
+              borderRadius: 5,
               cursor: "pointer",
               transition: "all 0.15s",
+              letterSpacing: "0.02em",
             }}
           >
             {copied ? "✓ Copied" : "Copy"}
@@ -239,8 +240,8 @@ export function FrameworkTabs() {
           margin: 0,
           padding: "22px 24px",
           fontFamily: "var(--font-mono, ui-monospace, monospace)",
-          fontSize: 13,
-          lineHeight: 1.65,
+          fontSize: 12.5,
+          lineHeight: 1.75,
           overflowX: "auto",
           color: "#E5E7EB",
         }}
