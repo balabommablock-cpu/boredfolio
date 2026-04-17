@@ -1,51 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { FrameworkTabs } from "./framework-tabs";
 
 /**
- * boredfolio.com/agdambagdam — marketing landing page for the Agdam Bagdam
- * open-source A/B testing platform.
+ * boredfolio.com/agdambagdam — premium enterprise SaaS marketing landing.
  *
- * Standalone Next.js page (not inside BoredfolioApp SPA), so normal
- * TSX + inline styles — following boredfolio's "inline styles only" aesthetic
- * convention but not its React.createElement / var-only JS convention
- * (those apply inside the BoredfolioApp SPA).
+ * Dark-mode first. Sharp sans-serif (Inter). Monospace accents (JetBrains Mono).
+ * Indigo → violet → pink gradient brand language. Mesh-gradient hero. Glass
+ * cards with subtle hover lift. Server-rendered; only the framework-tabs
+ * block is a client island.
  *
- * The page is pure static render — no client-side state. Any interactivity
- * (copy-to-clipboard, demo A/B widget) is loaded lazily via a client component.
+ * Keep color values as CSS variables defined on a wrapper div — it lets the
+ * client tabs component reuse them via var() without prop drilling.
  */
 
-// ── Boredfolio palette (mirrors BoredfolioApp's `C` constant) ───────────
-const C = {
-  cream: "#F5F0E8",
-  sage: "#6B8F71",
-  sageDk: "#5A7A5F",
-  mustard: "#C9A227",
-  char: "#1A1A1A",
-  body: "#3D3D3D",
-  muted: "#6B6B6B",
-  light: "#999",
-  white: "#FFFFFF",
-  border: "#E5DFD3",
-  red: "#C14E4E",
-  green: "#4F7B4F",
-  ab: "#4F46E5", // indigo — the distinctive Agdam Bagdam accent in the boredfolio nav
-};
-
-// Font stacks — match boredfolio's Sf (Playfair) / Bf (DM Sans) / Mf (JetBrains Mono).
-const Sf = '"Playfair Display", Georgia, serif';
-const Bf = '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-const Mf = '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
-  title: "Agdam Bagdam — Free, open-source A/B testing. Better stats than $500K tools.",
+  title:
+    "Agdam Bagdam — Open-source A/B testing with better statistics than $500K tools",
   description:
-    "Self-hostable A/B testing and feature flags with Bayesian + Frequentist stats, CUPED, sequential testing, SRM detection, and multi-armed bandits. MIT licensed. Zero data egress.",
+    "Self-hostable A/B testing and feature flags with Bayesian + Frequentist stats, CUPED, sequential testing, SRM, and multi-armed bandits. MIT licensed. Zero egress.",
   keywords: [
     "A/B testing",
     "open source A/B testing",
     "feature flags",
     "Bayesian A/B testing",
-    "frequentist A/B testing",
+    "Frequentist A/B testing",
     "SRM detection",
     "sequential testing",
     "CUPED",
@@ -57,6 +50,7 @@ export const metadata: Metadata = {
     "VWO alternative",
     "Statsig alternative",
     "GrowthBook alternative",
+    "Eppo alternative",
   ],
   alternates: { canonical: "https://boredfolio.com/agdambagdam" },
   openGraph: {
@@ -71,697 +65,840 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Agdam Bagdam — Test everything. Pay nothing.",
     description:
-      "Free, open-source A/B testing that makes $500K/year tools obsolete. Bayesian + Frequentist stats, sequential testing, SRM, CUPED, contextual bandits.",
+      "Open-source A/B testing that makes $500K/year tools obsolete. Bayesian + Frequentist stats, sequential testing, CUPED, contextual bandits.",
   },
   robots: { index: true, follow: true },
 };
 
-// ── Shared styles ───────────────────────────────────────────────────────
+// ── Scoped CSS: keyframes, hover states, gradients ─────────────────────────
+const GLOBAL_CSS = `
+  .agdam-root {
+    --bg: #0A0A0F;
+    --bg-elev: rgba(255,255,255,0.025);
+    --bg-elev-2: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --fg: #FAFAFA;
+    --fg-2: #A1A1AA;
+    --fg-3: #71717A;
+    --fg-4: #52525B;
+    --accent-1: #6366F1;
+    --accent-2: #8B5CF6;
+    --accent-3: #EC4899;
+    --success: #10B981;
+    --warning: #F59E0B;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+  }
+  .agdam-root *, .agdam-root *::before, .agdam-root *::after {
+    box-sizing: border-box;
+  }
 
-const pageWrapStyle: React.CSSProperties = {
-  minHeight: "100vh",
-  background: C.cream,
-  color: C.char,
-  fontFamily: Bf,
-  WebkitFontSmoothing: "antialiased",
-};
+  /* Hero mesh background */
+  @keyframes agdam-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(40px, -30px) scale(1.1); }
+  }
+  @keyframes agdam-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-50px, 20px) scale(1.05); }
+  }
+  @keyframes agdam-drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, 40px) scale(1.08); }
+  }
+  .agdam-orb { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.55; pointer-events: none; will-change: transform; }
+  .agdam-orb-1 { background: #6366F1; width: 420px; height: 420px; top: -120px; left: 10%; animation: agdam-drift-1 14s ease-in-out infinite; }
+  .agdam-orb-2 { background: #8B5CF6; width: 360px; height: 360px; top: 60px; right: 10%; animation: agdam-drift-2 18s ease-in-out infinite; }
+  .agdam-orb-3 { background: #EC4899; width: 300px; height: 300px; top: 200px; left: 40%; animation: agdam-drift-3 16s ease-in-out infinite; opacity: 0.38; }
 
-const sectionStyle: React.CSSProperties = {
-  maxWidth: 1100,
-  margin: "0 auto",
-  padding: "0 24px",
-};
+  /* Noise overlay — very subtle film grain */
+  .agdam-noise {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.04; z-index: 1; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
 
-const h1Style: React.CSSProperties = {
-  fontFamily: Sf,
-  fontSize: "clamp(44px, 6vw, 76px)",
-  lineHeight: 1.05,
-  letterSpacing: "-0.02em",
-  fontWeight: 900,
-  margin: 0,
-  color: C.char,
-};
+  /* Sticky nav */
+  .agdam-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,10,15,0.6); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
 
-const h2Style: React.CSSProperties = {
-  fontFamily: Sf,
-  fontSize: "clamp(30px, 4vw, 46px)",
-  lineHeight: 1.15,
-  letterSpacing: "-0.01em",
-  fontWeight: 900,
-  margin: 0,
-  color: C.char,
-};
+  /* Buttons */
+  .agdam-btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; padding: 11px 20px; border-radius: 10px; transition: all 0.18s cubic-bezier(0.2,0.8,0.2,1); text-decoration: none; cursor: pointer; border: none; font-family: inherit; line-height: 1; }
+  .agdam-btn-primary { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%); color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.06) inset, 0 4px 14px rgba(99,102,241,0.25); }
+  .agdam-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.08) inset, 0 6px 20px rgba(139,92,246,0.35); }
+  .agdam-btn-secondary { background: rgba(255,255,255,0.04); color: #FAFAFA; border: 1px solid rgba(255,255,255,0.1); }
+  .agdam-btn-secondary:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18); }
+  .agdam-btn-ghost { background: transparent; color: #A1A1AA; padding: 8px 12px; font-size: 14px; font-weight: 500; }
+  .agdam-btn-ghost:hover { color: #FAFAFA; }
 
-const eyebrowStyle: React.CSSProperties = {
-  fontFamily: Mf,
-  fontSize: 12,
-  fontWeight: 700,
-  color: C.sage,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  marginBottom: 14,
-};
+  /* Gradient text */
+  .agdam-gradient-text { background: linear-gradient(135deg, #A78BFA 0%, #F472B6 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 
-const btnPrimaryStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  fontFamily: Bf,
-  fontSize: 14,
-  fontWeight: 700,
-  color: C.cream,
-  background: C.char,
-  padding: "14px 24px",
-  borderRadius: 8,
-  textDecoration: "none",
-  transition: "transform 0.15s",
-};
+  /* Feature card */
+  .agdam-card {
+    position: relative;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.25s cubic-bezier(0.2,0.8,0.2,1);
+    overflow: hidden;
+  }
+  .agdam-card::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99,102,241,0) 0%, rgba(236,72,153,0) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+    transition: background 0.3s;
+  }
+  .agdam-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.14); background: var(--bg-elev-2); }
+  .agdam-card:hover::before { background: linear-gradient(135deg, rgba(99,102,241,0.5) 0%, rgba(236,72,153,0.5) 100%); }
 
-const btnSecondaryStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  fontFamily: Bf,
-  fontSize: 14,
-  fontWeight: 700,
-  color: C.char,
-  background: "transparent",
-  padding: "14px 24px",
-  borderRadius: 8,
-  border: `2px solid ${C.char}`,
-  textDecoration: "none",
-};
+  /* Pill / badge */
+  .agdam-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; padding: 5px 10px; border-radius: 9999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #A1A1AA; text-transform: uppercase; }
+  .agdam-pill-dot { width: 6px; height: 6px; border-radius: 9999px; background: #10B981; box-shadow: 0 0 8px #10B981; }
 
-const codeBlockStyle: React.CSSProperties = {
-  fontFamily: Mf,
-  fontSize: 13,
-  lineHeight: 1.6,
-  background: "#0F1116",
-  color: "#E6E6E6",
-  padding: "22px 24px",
-  borderRadius: 12,
-  overflow: "auto",
-  whiteSpace: "pre",
-};
+  /* Comparison table */
+  .agdam-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+  .agdam-table th, .agdam-table td { padding: 14px 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .agdam-table th:first-child, .agdam-table td:first-child { text-align: left; }
+  .agdam-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #A1A1AA; font-weight: 600; padding-top: 18px; padding-bottom: 18px; }
+  .agdam-table .agdam-us-col { background: linear-gradient(180deg, rgba(99,102,241,0.08) 0%, rgba(236,72,153,0.04) 100%); border-left: 1px solid rgba(99,102,241,0.25); border-right: 1px solid rgba(99,102,241,0.25); }
+  .agdam-table thead .agdam-us-col { border-top: 1px solid rgba(99,102,241,0.25); border-top-left-radius: 8px; border-top-right-radius: 8px; }
+  .agdam-table tbody tr:last-child .agdam-us-col { border-bottom: 1px solid rgba(99,102,241,0.25); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+  .agdam-table tbody tr:hover td { background: rgba(255,255,255,0.01); }
+  .agdam-table tbody tr:hover .agdam-us-col { background: linear-gradient(180deg, rgba(99,102,241,0.12) 0%, rgba(236,72,153,0.06) 100%); }
 
-// ── Comparison matrix data ──────────────────────────────────────────────
+  /* Reveal-on-scroll — pure CSS, triggers as section enters viewport via animation-timeline */
+  @supports (animation-timeline: view()) {
+    .agdam-reveal {
+      animation: agdam-fade-up linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 20%;
+    }
+    @keyframes agdam-fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
 
-type Cell = "yes" | "no" | "paid" | "partial" | "coming";
+  /* Responsive */
+  @media (max-width: 760px) {
+    .agdam-hero-h1 { font-size: 42px !important; line-height: 1.05 !important; }
+    .agdam-nav-links { display: none !important; }
+    .agdam-hide-mobile { display: none !important; }
+    .agdam-grid-cols-3 { grid-template-columns: 1fr !important; }
+    .agdam-grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+`;
 
-interface Row {
-  feature: string;
-  ab: Cell;
-  vwo: Cell;
-  optim: Cell;
-  ldkly: Cell;
-  statsig: Cell;
-  eppo: Cell;
-}
+// ── Data ────────────────────────────────────────────────────────────────
 
-const COMPARISON_ROWS: Row[] = [
-  { feature: "Bayesian analysis", ab: "yes", vwo: "yes", optim: "no", ldkly: "no", statsig: "yes", eppo: "no" },
-  { feature: "Frequentist tests", ab: "yes", vwo: "yes", optim: "yes", ldkly: "partial", statsig: "yes", eppo: "yes" },
-  { feature: "CUPED variance reduction", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "paid", eppo: "paid" },
-  { feature: "Sequential testing", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "paid", eppo: "paid" },
-  { feature: "SRM detection", ab: "yes", vwo: "partial", optim: "partial", ldkly: "no", statsig: "yes", eppo: "yes" },
-  { feature: "Multi-armed bandits", ab: "yes", vwo: "paid", optim: "paid", ldkly: "no", statsig: "yes", eppo: "no" },
-  { feature: "Contextual bandits (LinUCB)", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "paid", eppo: "no" },
-  { feature: "Feature flags", ab: "yes", vwo: "partial", optim: "yes", ldkly: "yes", statsig: "yes", eppo: "yes" },
-  { feature: "Self-hostable", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "paid", eppo: "paid" },
-  { feature: "MIT open source", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "no", eppo: "no" },
-  { feature: "Zero data egress", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "no", eppo: "no" },
-  { feature: "Free tier (unlimited MAU)", ab: "yes", vwo: "no", optim: "no", ldkly: "no", statsig: "no", eppo: "no" },
+type Cell = "yes" | "no" | "paid" | "partial" | "soon";
+
+const COMPARISON: { feature: string; us: Cell; vwo: Cell; optim: Cell; ld: Cell; statsig: Cell; eppo: Cell }[] = [
+  { feature: "Bayesian inference",        us: "yes", vwo: "yes",     optim: "no",      ld: "no",      statsig: "yes",  eppo: "no" },
+  { feature: "Frequentist tests",         us: "yes", vwo: "yes",     optim: "yes",     ld: "partial", statsig: "yes",  eppo: "yes" },
+  { feature: "CUPED variance reduction",  us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "paid", eppo: "paid" },
+  { feature: "Sequential testing",        us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "paid", eppo: "paid" },
+  { feature: "SRM detection",             us: "yes", vwo: "partial", optim: "partial", ld: "no",      statsig: "yes",  eppo: "yes" },
+  { feature: "Multi-armed bandits",       us: "yes", vwo: "paid",    optim: "paid",    ld: "no",      statsig: "yes",  eppo: "no" },
+  { feature: "Contextual bandits",        us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "paid", eppo: "no" },
+  { feature: "Feature flags",             us: "yes", vwo: "partial", optim: "yes",     ld: "yes",     statsig: "yes",  eppo: "yes" },
+  { feature: "Self-hostable",             us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "paid", eppo: "paid" },
+  { feature: "MIT open source",           us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "no",   eppo: "no" },
+  { feature: "Zero data egress",          us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "no",   eppo: "no" },
+  { feature: "Free unlimited MAU",        us: "yes", vwo: "no",      optim: "no",      ld: "no",      statsig: "no",   eppo: "no" },
 ];
 
 function CellGlyph({ v }: { v: Cell }) {
-  const commonStyle: React.CSSProperties = {
-    fontFamily: Mf,
-    fontWeight: 700,
-    fontSize: 13,
-    display: "inline-block",
-    minWidth: 38,
-    textAlign: "center",
-  };
   if (v === "yes")
-    return <span style={{ ...commonStyle, color: C.green }}>✓</span>;
-  if (v === "no")
-    return <span style={{ ...commonStyle, color: C.light }}>—</span>;
-  if (v === "paid")
-    return <span style={{ ...commonStyle, color: C.mustard, fontSize: 10 }}>$$$</span>;
-  if (v === "partial")
-    return <span style={{ ...commonStyle, color: C.muted, fontSize: 10 }}>partial</span>;
-  return <span style={{ ...commonStyle, color: C.ab, fontSize: 10 }}>soon</span>;
+    return <span style={{ color: "#10B981", fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 15 }}>✓</span>;
+  if (v === "no") return <span style={{ color: "#3F3F46", fontWeight: 700 }}>—</span>;
+  if (v === "paid") return <span style={{ fontSize: 11, fontWeight: 600, color: "#F59E0B", fontFamily: "var(--font-mono)" }}>$$$</span>;
+  if (v === "partial") return <span style={{ fontSize: 11, fontWeight: 500, color: "#71717A" }}>partial</span>;
+  return <span style={{ fontSize: 11, fontWeight: 600, color: "#A78BFA" }}>soon</span>;
 }
 
-// ── Feature cards data ──────────────────────────────────────────────────
-
-const FEATURE_CARDS = [
+const FEATURES = [
   {
-    title: "Dual statistics engine",
-    body: "Bayesian and Frequentist analysis in the same result payload. PMs get 'probability this is better,' data scientists get p-values. Nobody has to translate.",
-    ref: "Only Convert offers both commercially.",
+    title: "Dual statistics",
+    desc: "Bayesian + Frequentist analysis on the same result payload. Execs get 'probability it's better', data scientists get p-values.",
+    ref: "Only Convert ships both.",
+    icon: "🧮",
   },
   {
     title: "Sequential testing + SRM",
-    body: "Peek at results without inflating Type I error. Spot sample-ratio-mismatch before it corrupts your decisions. Statsig and Eppo charge for these — we don't.",
-    ref: "Monte Carlo verified: 10,000 trials, Type I ≤ α.",
+    desc: "Peek without inflating Type I error. Detect sample-ratio mismatch before it corrupts decisions.",
+    ref: "Statsig paywalls these. We don't.",
+    icon: "📉",
   },
   {
     title: "CUPED variance reduction",
-    body: "Reduce experiment runtime 20–50% by using pre-experiment covariates. Facebook and Microsoft built this into their platforms. So did we. For free.",
-    ref: "Deng et al. 2013, reference-validated.",
+    desc: "Cut experiment runtime 20–50% using pre-experiment covariates. The technique Facebook and Microsoft built in-house.",
+    ref: "Deng et al. 2013 (WSDM).",
+    icon: "⚡",
   },
   {
-    title: "Multi-armed + contextual bandits",
-    body: "Thompson sampling, UCB1, Epsilon-greedy, and LinUCB for contextual bandits. Only Statsig has this commercially — and gates it behind an enterprise contract.",
-    ref: "LinUCB from Li et al. 2010.",
+    title: "Contextual bandits (LinUCB)",
+    desc: "Thompson, UCB1, ε-greedy, and LinUCB. Only Statsig has contextual bandits commercially — behind an enterprise contract.",
+    ref: "Li et al. 2010 (WWW).",
+    icon: "🎰",
   },
   {
     title: "Deterministic assignment",
-    body: "MurmurHash3(experiment_key + user_id) produces the same 32-bit int on the server and in every SDK, forever. Same input, same variant, no drift.",
-    ref: "Canonical Appleby reference impl.",
+    desc: "MurmurHash3(experiment + user) returns the same 32-bit int on the server and in every SDK, forever. No drift.",
+    ref: "Appleby reference impl.",
+    icon: "🔑",
   },
   {
-    title: "Privacy-first by design",
-    body: "No third-party cookies. Respects Do Not Track. First-party data only. In self-host mode, no egress — your event stream never leaves your VPC.",
-    ref: "GDPR + CCPA compliant by default.",
+    title: "Privacy-first",
+    desc: "No third-party cookies. Respects DNT. Self-host mode has zero data egress — your event stream never leaves your VPC.",
+    ref: "GDPR + CCPA by default.",
+    icon: "🛡️",
   },
 ];
 
+const TRUST_LINKS = [
+  { title: "SECURITY.md", body: "Coordinated disclosure, CVSS SLAs, safe harbor. Private reporting enabled.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/SECURITY.md" },
+  { title: "BENCHMARKS.md", body: "10k-trial Monte Carlo. SciPy + R reference parity. Every method cites its paper.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/BENCHMARKS.md" },
+  { title: "ARCHITECTURE.md", body: "Design, flow diagrams, schema, and explicit trust boundaries.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/ARCHITECTURE.md" },
+  { title: "FEATURES.md", body: "Honest competitor matrix with a gap column. If it's not done, we say so.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/FEATURES.md" },
+  { title: "Troubleshooting", body: "Every error code → plain-English fix → direct link.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/docs/troubleshooting.md" },
+  { title: "CI pipeline", body: "Tests on Node 20/22/24, semgrep, gitleaks, bundle-size, Monte Carlo.", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/.github/workflows/ci.yml" },
+];
+
+// ── Styles ──────────────────────────────────────────────────────────────
+
+const CONTAINER: React.CSSProperties = { maxWidth: 1180, margin: "0 auto", padding: "0 24px" };
+const SECTION_PAD: React.CSSProperties = { padding: "120px 0" };
+
+// ── Components ──────────────────────────────────────────────────────────
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 16 }}>
+      {children}
+    </div>
+  );
+}
+
+function H2({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.025em", margin: 0, color: "#FAFAFA" }}>
+      {children}
+    </h2>
+  );
+}
+
+function Lead({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 18, lineHeight: 1.6, color: "#A1A1AA", margin: "16px 0 0 0", maxWidth: 640 }}>
+      {children}
+    </p>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────
 
-export default function AgdamBagdamLandingPage() {
+export default function AgdamBagdamLanding() {
   return (
-    <main style={pageWrapStyle}>
-      {/* ── Top nav ── */}
-      <nav style={{ ...sectionStyle, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Link href="/" style={{ fontFamily: Sf, fontSize: 22, color: C.char, textDecoration: "none" }}>
-          <span style={{ fontWeight: 900 }}>bored</span>
-          <span style={{ fontWeight: 400 }}>folio</span>
-          <span style={{ color: C.sage }}>.</span>
-          <span style={{ color: C.muted, fontFamily: Bf, fontSize: 14, fontWeight: 400, marginLeft: 10 }}>/agdambagdam</span>
-        </Link>
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-          <Link href="/agdambagdam/docs" style={{ fontFamily: Bf, fontSize: 14, color: C.body, textDecoration: "none" }}>
-            Docs
+    <main className={`agdam-root ${inter.variable} ${mono.variable}`}>
+      <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
+
+      {/* ── Nav ─────────────────────────────────────────────────────── */}
+      <nav className="agdam-nav">
+        <div style={{ ...CONTAINER, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "#FAFAFA" }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg, #6366F1, #EC4899)", boxShadow: "0 0 12px rgba(139,92,246,0.5)" }} />
+            <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-0.01em" }}>Agdam Bagdam</span>
+            <span className="agdam-pill" style={{ marginLeft: 4 }}>
+              <span className="agdam-pill-dot" />
+              v0.1.0
+            </span>
           </Link>
-          <a
-            href="https://github.com/balabommablock-cpu/agdambagdam"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontFamily: Bf, fontSize: 14, color: C.body, textDecoration: "none" }}
-          >
-            GitHub
-          </a>
-          <Link href="/agdambagdam/app" style={btnPrimaryStyle}>
-            Open dashboard →
-          </Link>
+          <div className="agdam-nav-links" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <a href="#features" className="agdam-btn agdam-btn-ghost">Features</a>
+            <Link href="/agdambagdam/docs" className="agdam-btn agdam-btn-ghost">Docs</Link>
+            <a href="https://github.com/balabommablock-cpu/agdambagdam" target="_blank" rel="noopener" className="agdam-btn agdam-btn-ghost">GitHub</a>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Link href="/agdambagdam/app" className="agdam-btn agdam-btn-secondary">Dashboard</Link>
+            <a href="#quickstart" className="agdam-btn agdam-btn-primary agdam-hide-mobile">Get started →</a>
+          </div>
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section style={{ ...sectionStyle, padding: "80px 24px 40px" }}>
-        <div style={eyebrowStyle}>AGDAM BAGDAM · OPEN SOURCE · MIT LICENSED</div>
-        <h1 style={h1Style}>
-          A/B testing that makes{" "}
-          <span style={{ color: C.sage, fontStyle: "italic", fontWeight: 400 }}>$500K/year tools</span>
-          <br />
-          look like a scam.
-        </h1>
-        <p style={{ fontFamily: Bf, fontSize: 19, lineHeight: 1.55, color: C.body, maxWidth: 700, marginTop: 24 }}>
-          VWO bills you $75K. Optimizely starts at $200K. LaunchDarkly adds a zero for "enterprise." They are
-          selling marketing copy wrapped around a z-test. We wrote the better math, open-sourced it under MIT,
-          and made it free. Forever.
-        </p>
-        <div style={{ marginTop: 36, display: "flex", flexWrap: "wrap", gap: 14 }}>
-          <Link href="#quickstart" style={btnPrimaryStyle}>
-            Ship your first test in 60s ↓
-          </Link>
+      {/* ── Hero ────────────────────────────────────────────────────── */}
+      <section style={{ position: "relative", overflow: "hidden", padding: "100px 0 120px" }}>
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+          <div className="agdam-orb agdam-orb-1" />
+          <div className="agdam-orb agdam-orb-2" />
+          <div className="agdam-orb agdam-orb-3" />
+          <div className="agdam-noise" />
+          {/* Radial fade to hide orbs at the edges */}
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center top, transparent 0%, rgba(10,10,15,0.6) 60%, var(--bg) 100%)" }} />
+        </div>
+        <div style={{ ...CONTAINER, position: "relative", zIndex: 2, textAlign: "center" }}>
           <a
             href="https://github.com/balabommablock-cpu/agdambagdam"
             target="_blank"
-            rel="noopener noreferrer"
-            style={btnSecondaryStyle}
+            rel="noopener"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px 6px 6px 14px",
+              borderRadius: 9999,
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.03)",
+              fontSize: 13,
+              color: "#A1A1AA",
+              textDecoration: "none",
+              marginBottom: 28,
+              transition: "all 0.2s",
+            }}
           >
-            Star on GitHub
+            <span style={{ color: "#FAFAFA" }}>New:</span> 10,000-trial Monte Carlo validation shipped
+            <span style={{ background: "linear-gradient(135deg, #6366F1, #EC4899)", padding: "3px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600, color: "white" }}>Read →</span>
           </a>
-        </div>
-        <div style={{ marginTop: 32, display: "flex", flexWrap: "wrap", gap: 26, color: C.muted, fontSize: 13, fontFamily: Mf }}>
-          <span>✓ Zero vendor lock-in</span>
-          <span>✓ Self-hosted or managed</span>
-          <span>✓ Better stats than the incumbents</span>
-          <span>✓ Kid-integrable in 60s</span>
-        </div>
-      </section>
+          <h1
+            className="agdam-hero-h1"
+            style={{
+              fontSize: "clamp(48px, 7.5vw, 96px)",
+              fontWeight: 800,
+              lineHeight: 1.02,
+              letterSpacing: "-0.035em",
+              margin: "0 auto",
+              maxWidth: 980,
+              color: "#FAFAFA",
+            }}
+          >
+            A/B testing that makes{" "}
+            <span className="agdam-gradient-text">$500K tools</span>
+            <br />
+            look like a scam.
+          </h1>
+          <p style={{ fontSize: 20, lineHeight: 1.55, color: "#A1A1AA", marginTop: 28, maxWidth: 680, marginLeft: "auto", marginRight: "auto" }}>
+            Bayesian + Frequentist stats. CUPED, sequential testing, SRM detection, contextual bandits.
+            Self-hostable. MIT licensed. Zero data egress. The features incumbents charge{" "}
+            <span style={{ color: "#FAFAFA", fontWeight: 600 }}>$50,000–$200,000/year</span> for — free, forever.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 40 }}>
+            <a href="#quickstart" className="agdam-btn agdam-btn-primary" style={{ padding: "14px 22px", fontSize: 15 }}>
+              Ship your first test in 60s →
+            </a>
+            <a
+              href="https://github.com/balabommablock-cpu/agdambagdam"
+              target="_blank"
+              rel="noopener"
+              className="agdam-btn agdam-btn-secondary"
+              style={{ padding: "14px 22px", fontSize: 15 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.58v-2.05c-3.34.73-4.04-1.6-4.04-1.6-.54-1.4-1.33-1.77-1.33-1.77-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.07 1.84 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.3.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.87.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.6-2.8 5.63-5.47 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .3" /></svg>
+              Star on GitHub
+            </a>
+          </div>
 
-      {/* ── What they charge vs what you pay ── */}
-      <section style={{ ...sectionStyle, padding: "40px 24px 40px" }}>
-        <div
-          style={{
-            background: C.white,
-            border: `1px solid ${C.border}`,
-            borderRadius: 16,
-            padding: 32,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 24,
-          }}
-        >
-          {[
-            { label: "VWO", price: "$12K–$75K/yr" },
-            { label: "Optimizely", price: "$50K–$200K/yr" },
-            { label: "LaunchDarkly", price: "$8K–$100K/yr" },
-            { label: "Statsig", price: "$20K–$100K/yr" },
-            { label: "Agdam Bagdam", price: "$0", highlight: true },
-          ].map((p) => (
-            <div key={p.label} style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontFamily: Bf,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: p.highlight ? C.sage : C.muted,
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                }}
-              >
-                {p.label}
-              </div>
-              <div
-                style={{
-                  fontFamily: Sf,
-                  fontSize: p.highlight ? 36 : 22,
-                  fontWeight: 900,
-                  color: p.highlight ? C.sage : C.char,
-                  marginTop: 6,
-                  textDecoration: p.highlight ? "none" : "line-through",
-                  textDecorationColor: C.light,
-                }}
-              >
-                {p.price}
-              </div>
-            </div>
-          ))}
+          {/* Live metric strip */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap", marginTop: 52, fontFamily: "var(--font-mono)", fontSize: 13, color: "#71717A" }}>
+            <div><span style={{ color: "#FAFAFA", fontWeight: 600 }}>14.7 KB</span> SDK gzipped</div>
+            <div><span style={{ color: "#FAFAFA", fontWeight: 600 }}>10,000</span> Monte Carlo trials</div>
+            <div><span style={{ color: "#FAFAFA", fontWeight: 600 }}>57 / 57</span> tests passing</div>
+            <div><span style={{ color: "#FAFAFA", fontWeight: 600 }}>0</span> runtime deps</div>
+          </div>
         </div>
       </section>
 
-      {/* ── 60-second quickstart ── */}
-      <section id="quickstart" style={{ ...sectionStyle, padding: "80px 24px" }}>
-        <div style={eyebrowStyle}>SIXTY-SECOND QUICKSTART</div>
-        <h2 style={h2Style}>Paste. Save. Ship.</h2>
-        <p style={{ fontFamily: Bf, fontSize: 17, color: C.body, marginTop: 14, maxWidth: 700 }}>
-          No account for the demo. No build step. No framework required. Drop this before{" "}
-          <code style={{ fontFamily: Mf, background: "#F0EBE0", padding: "1px 6px", borderRadius: 4 }}>
-            &lt;/body&gt;
-          </code>{" "}
-          on any HTML page. It works.
-        </p>
-
-        <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 20 }}>
-          <pre style={codeBlockStyle}>{`<script src="https://unpkg.com/agdambagdam@latest/dist/abacus.js"></script>
-<script>
-  const ab = new Abacus({
-    apiKey:  'demo-public-key',
-    baseUrl: 'https://boredfolio.com/agdambagdam/api'
-  });
-
-  ab.getVariant('button-color-test').then((variant) => {
-    const btn = document.querySelector('#signup');
-    if (variant === 'green') btn.style.backgroundColor = 'green';
-  });
-
-  document.querySelector('#signup').onclick = () => ab.track('signup-click');
-</script>`}</pre>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+      {/* ── Price wall of shame ─────────────────────────────────────── */}
+      <section style={{ padding: "0 0 80px" }}>
+        <div style={CONTAINER}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 1,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
             {[
-              {
-                step: "01",
-                title: "Loads in ~15 KB gz",
-                body: "Smaller than a logo image. Uses your first-party path, no third-party cookies, sails past ad-blockers.",
-              },
-              {
-                step: "02",
-                title: "Deterministic forever",
-                body: "MurmurHash3(experiment + user) → same visitor always sees the same variant. No drift between server and browser.",
-              },
-              {
-                step: "03",
-                title: "Fails safe",
-                body: "If the API is unreachable, the SDK returns 'control' and logs a kid-friendly console error with a direct fix link.",
-              },
-            ].map((x) => (
+              { label: "VWO", price: "$12K–$75K" },
+              { label: "Optimizely", price: "$50K–$200K" },
+              { label: "LaunchDarkly", price: "$8K–$100K" },
+              { label: "Statsig", price: "$20K–$100K" },
+              { label: "Eppo", price: "$30K–$150K" },
+              { label: "Agdam Bagdam", price: "$0", highlight: true },
+            ].map((p) => (
               <div
-                key={x.step}
+                key={p.label}
                 style={{
-                  background: C.white,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 12,
-                  padding: 20,
+                  background: p.highlight ? "linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.08) 100%)" : "rgba(10,10,15,0.98)",
+                  padding: "28px 20px",
+                  textAlign: "center",
+                  position: "relative",
                 }}
               >
-                <div style={{ fontFamily: Mf, fontSize: 11, color: C.sage, fontWeight: 700, letterSpacing: 1 }}>STEP {x.step}</div>
-                <div style={{ fontFamily: Sf, fontSize: 18, fontWeight: 900, color: C.char, marginTop: 6 }}>
-                  {x.title}
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: p.highlight ? "#A78BFA" : "#71717A",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 10,
+                  }}
+                >
+                  {p.label}
                 </div>
-                <div style={{ fontFamily: Bf, fontSize: 14, color: C.body, marginTop: 8, lineHeight: 1.55 }}>{x.body}</div>
+                <div
+                  style={{
+                    fontFamily: p.highlight ? "var(--font-sans)" : "var(--font-mono)",
+                    fontSize: p.highlight ? 34 : 22,
+                    fontWeight: p.highlight ? 800 : 600,
+                    color: p.highlight ? "#FAFAFA" : "#52525B",
+                    letterSpacing: "-0.02em",
+                    textDecoration: p.highlight ? "none" : "line-through",
+                  }}
+                >
+                  {p.price}
+                </div>
+                <div style={{ fontSize: 11, color: p.highlight ? "#10B981" : "#3F3F46", marginTop: 4, fontWeight: 500 }}>
+                  {p.highlight ? "forever" : "per year"}
+                </div>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        <div style={{ marginTop: 28, display: "flex", flexWrap: "wrap", gap: 14 }}>
-          <Link href="/agdambagdam/docs" style={btnSecondaryStyle}>
-            Read the full docs
-          </Link>
-          <a
-            href="https://github.com/balabommablock-cpu/agdambagdam/tree/main/examples"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={btnSecondaryStyle}
+      {/* ── Features ────────────────────────────────────────────────── */}
+      <section id="features" style={{ ...SECTION_PAD }}>
+        <div style={CONTAINER}>
+          <div style={{ maxWidth: 720, marginBottom: 56 }}>
+            <Eyebrow>What's inside</Eyebrow>
+            <H2>
+              Six things the incumbents charge
+              <br />
+              <span className="agdam-gradient-text">enterprise rates</span> for.
+            </H2>
+            <Lead>
+              Every capability below ships in the free tier. Every claim links to a committed artifact —
+              paper, test, reference implementation, or Monte Carlo proof.
+            </Lead>
+          </div>
+          <div
+            className="agdam-grid-cols-3"
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}
           >
-            Next.js · React · Vue · Shopify · WordPress
-          </a>
-        </div>
-      </section>
-
-      {/* ── Comparison matrix ── */}
-      <section style={{ ...sectionStyle, padding: "80px 24px" }}>
-        <div style={eyebrowStyle}>THE HONEST COMPARISON</div>
-        <h2 style={h2Style}>What you get for $0 vs what they charge for.</h2>
-        <p style={{ fontFamily: Bf, fontSize: 17, color: C.body, marginTop: 14, maxWidth: 720 }}>
-          If a cell is wrong, open an issue with a citation and we'll fix it. We keep this matrix
-          honest because the alternative is embarrassing.
-        </p>
-
-        <div
-          style={{
-            marginTop: 30,
-            background: C.white,
-            border: `1px solid ${C.border}`,
-            borderRadius: 12,
-            overflow: "auto",
-          }}
-        >
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, fontFamily: Bf, minWidth: 720 }}>
-            <thead style={{ background: "#FAF6EE" }}>
-              <tr>
-                <th style={thStyle(true)}>Capability</th>
-                <th style={{ ...thStyle(), color: C.ab }}>Agdam Bagdam</th>
-                <th style={thStyle()}>VWO</th>
-                <th style={thStyle()}>Optimizely</th>
-                <th style={thStyle()}>LaunchDarkly</th>
-                <th style={thStyle()}>Statsig</th>
-                <th style={thStyle()}>Eppo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON_ROWS.map((r, i) => (
-                <tr key={r.feature} style={{ background: i % 2 === 0 ? C.white : "#FCFAF5" }}>
-                  <td style={{ ...tdStyle(true), color: C.char, fontWeight: 600 }}>{r.feature}</td>
-                  <td style={{ ...tdStyle(), background: "rgba(79,70,229,0.06)" }}>
-                    <CellGlyph v={r.ab} />
-                  </td>
-                  <td style={tdStyle()}><CellGlyph v={r.vwo} /></td>
-                  <td style={tdStyle()}><CellGlyph v={r.optim} /></td>
-                  <td style={tdStyle()}><CellGlyph v={r.ldkly} /></td>
-                  <td style={tdStyle()}><CellGlyph v={r.statsig} /></td>
-                  <td style={tdStyle()}><CellGlyph v={r.eppo} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <p style={{ marginTop: 18, fontFamily: Mf, fontSize: 12, color: C.muted }}>
-          ✓ = fully supported · — = not supported · $$$ = paid tier · partial = workaround required · soon = on roadmap
-        </p>
-      </section>
-
-      {/* ── Feature cards ── */}
-      <section style={{ ...sectionStyle, padding: "40px 24px 80px" }}>
-        <div style={eyebrowStyle}>WHAT'S INSIDE THE BOX</div>
-        <h2 style={h2Style}>Seven things the incumbents charge enterprise rates for.</h2>
-        <div
-          style={{
-            marginTop: 40,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {FEATURE_CARDS.map((f) => (
-            <div
-              key={f.title}
-              style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
-                borderRadius: 12,
-                padding: 26,
-              }}
-            >
-              <div style={{ fontFamily: Sf, fontSize: 22, fontWeight: 900, color: C.char }}>{f.title}</div>
-              <div style={{ fontFamily: Bf, fontSize: 14, color: C.body, marginTop: 10, lineHeight: 1.6 }}>
-                {f.body}
+            {FEATURES.map((f) => (
+              <div key={f.title} className="agdam-card">
+                <div style={{ fontSize: 24, marginBottom: 14, filter: "grayscale(0.2)" }}>{f.icon}</div>
+                <h3 style={{ fontSize: 17, fontWeight: 600, margin: "0 0 8px 0", color: "#FAFAFA" }}>{f.title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.55, color: "#A1A1AA", margin: 0 }}>{f.desc}</p>
+                <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", fontFamily: "var(--font-mono)", fontSize: 11, color: "#71717A" }}>
+                  {f.ref}
+                </div>
               </div>
-              <div style={{ fontFamily: Mf, fontSize: 11, color: C.sage, marginTop: 14, letterSpacing: 0.5 }}>
-                {f.ref}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Statistical rigor ── */}
-      <section style={{ background: C.white, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ ...sectionStyle, padding: "80px 24px" }}>
-          <div style={eyebrowStyle}>STATISTICAL RIGOR</div>
-          <h2 style={h2Style}>The math is public. So is the proof.</h2>
-          <p style={{ fontFamily: Bf, fontSize: 17, color: C.body, marginTop: 14, maxWidth: 740, lineHeight: 1.6 }}>
-            Most A/B tools hide their assumptions behind NDAs. We checked in a{" "}
-            <strong style={{ color: C.char }}>10,000-trial Monte Carlo validation harness</strong> that verifies
-            Type I error, SRM false-positive rates, and CUPED variance reduction on every pull request.
-            Every method cites its academic reference inline. You can reproduce the whole suite locally:
-          </p>
-
-          <pre style={{ ...codeBlockStyle, marginTop: 24 }}>{`# Clone, install, prove our stats are correct
-git clone https://github.com/balabommablock-cpu/agdambagdam
-cd agdambagdam && npm install
-npx tsx packages/stats/benchmarks/monte-carlo.ts --seed 42
-
-# Output (2026-04-16 run):
-#   ✅ Frequentist z-test — reference parity (unpooled)
-#   ✅ Frequentist z-test — Type I error under H₀           0.0484
-#   ✅ Sequential (O'Brien-Fleming) Type I across 4 looks   0.0377
-#   ✅ Sequential (Pocock) Type I across 4 looks            0.0347
-#   ✅ SRM detector Type I under true 50/50                  0.0116
-#   ✅ CUPED empirical variance reduction (ρ=0.7)            0.4863
-#   All 6 suites passed`}</pre>
-
-          <div style={{ marginTop: 24, display: "flex", flexWrap: "wrap", gap: 14 }}>
-            <a
-              href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/BENCHMARKS.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={btnPrimaryStyle}
-            >
-              Read BENCHMARKS.md
-            </a>
-            <a
-              href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/packages/stats/benchmarks/scipy_reference.py"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={btnSecondaryStyle}
-            >
-              SciPy reference parity
-            </a>
-            <a
-              href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/packages/stats/benchmarks/r_reference.R"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={btnSecondaryStyle}
-            >
-              gsDesign (R) parity
-            </a>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Self-host ── */}
-      <section style={{ ...sectionStyle, padding: "80px 24px" }}>
-        <div style={eyebrowStyle}>SELF-HOST IN 3 MINUTES</div>
-        <h2 style={h2Style}>Your data. Your VPC. Your call.</h2>
-        <p style={{ fontFamily: Bf, fontSize: 17, color: C.body, marginTop: 14, maxWidth: 720, lineHeight: 1.6 }}>
-          Enterprises don't want their experimentation data leaving the network. Good news: the entire stack
-          ships as Docker Compose. Postgres, API server, dashboard — one command.
-        </p>
-
-        <pre style={{ ...codeBlockStyle, marginTop: 28 }}>{`git clone https://github.com/balabommablock-cpu/agdambagdam
-cd agdambagdam
-docker-compose up -d
-# Postgres ready.  API on :3456.  Dashboard on :3457.
-# Visit http://localhost:3457, paste the printed API key, done.`}</pre>
-
-        <div
-          style={{
-            marginTop: 32,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 18,
-          }}
-        >
-          {[
-            "Zero data egress — your events never leave the box.",
-            "Runs anywhere Docker runs: laptop, single VM, Kubernetes.",
-            "Audit log on every mutation, queryable SQL.",
-            "MIT license — fork it, embed it, sell it. Whatever.",
-          ].map((line) => (
-            <div
-              key={line}
-              style={{
-                background: C.cream,
-                borderLeft: `3px solid ${C.sage}`,
-                padding: "14px 18px",
-                fontFamily: Bf,
-                fontSize: 14,
-                color: C.body,
-                lineHeight: 1.5,
-              }}
-            >
-              {line}
+      {/* ── Quickstart with framework tabs ──────────────────────────── */}
+      <section id="quickstart" style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 48 }}>
+            <div style={{ maxWidth: 720 }}>
+              <Eyebrow>60-second integration</Eyebrow>
+              <H2>Drop it in. It works.</H2>
+              <Lead>
+                A single script tag is the entire install. No build step. No framework adapter. Works on
+                plain HTML, any SPA, any SSR. Pick your stack:
+              </Lead>
             </div>
-          ))}
+            <FrameworkTabs />
+            <div
+              className="agdam-grid-cols-3"
+              style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}
+            >
+              {[
+                { n: "01", title: "Loads in ~15 KB gzipped", body: "Smaller than a logo image. First-party path, no trackers, sails past ad-blockers." },
+                { n: "02", title: "Deterministic forever", body: "MurmurHash3 produces the same variant for the same user on every SDK, every time." },
+                { n: "03", title: "Fails safe", body: "API unreachable → SDK returns 'control' and logs a kid-friendly error with a docs link." },
+              ].map((x) => (
+                <div key={x.n} style={{ padding: "4px 0" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.1em", marginBottom: 10 }}>
+                    STEP {x.n}
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#FAFAFA", marginBottom: 6 }}>{x.title}</div>
+                  <div style={{ fontSize: 14, lineHeight: 1.55, color: "#A1A1AA" }}>{x.body}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Trust / security ── */}
-      <section style={{ ...sectionStyle, padding: "40px 24px 80px" }}>
-        <div style={eyebrowStyle}>TRUST, NOT CLAIMS</div>
-        <h2 style={h2Style}>Every claim is a link to a committed artifact.</h2>
-        <div
-          style={{
-            marginTop: 30,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 16,
-          }}
-        >
-          {[
-            {
-              title: "SECURITY.md",
-              body: "Coordinated disclosure, CVSS-tiered SLAs, scope, safe harbor. Private GitHub vulnerability reporting enabled.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/SECURITY.md",
-            },
-            {
-              title: "BENCHMARKS.md",
-              body: "10k-trial Monte Carlo validation. SciPy + R reference parity. Every method cites its paper inline.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/BENCHMARKS.md",
-            },
-            {
-              title: "ARCHITECTURE.md",
-              body: "11-section system design with data-flow diagrams, schema, and explicit trust boundaries.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/ARCHITECTURE.md",
-            },
-            {
-              title: "FEATURES.md",
-              body: "Honest competitor matrix with a gap column. If it's not done, we say so.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/FEATURES.md",
-            },
-            {
-              title: "Troubleshooting docs",
-              body: "Every error code → plain-English fix → direct link. Indexed by error string.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/docs/troubleshooting.md",
-            },
-            {
-              title: "CI on every PR",
-              body: "Tests on Node 20/22/24, semgrep, gitleaks, npm audit, bundle-size budget, license check, Monte Carlo validation.",
-              href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/.github/workflows/ci.yml",
-            },
-          ].map((x) => (
-            <a
-              key={x.title}
-              href={x.href}
-              target="_blank"
-              rel="noopener noreferrer"
+      {/* ── Stats / metrics ─────────────────────────────────────────── */}
+      <section style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div
+            className="agdam-grid-cols-4"
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}
+          >
+            {[
+              { n: "0", unit: "runtime deps", body: "The stats engine is 2,947 lines of pure TypeScript. No supply-chain risk." },
+              { n: "10K", unit: "MC trials per PR", body: "Every change runs through a Monte Carlo validation harness in CI. Type I error must stay ≤ α." },
+              { n: "6/6", unit: "suites passing", body: "Z-test, sequential (OBF + Pocock), SRM, CUPED, reference parity. Receipts in the repo." },
+              { n: "MIT", unit: "license", body: "Fork it, embed it, sell it. No vendor contract. No rug pull." },
+            ].map((s) => (
+              <div key={s.n} style={{ padding: 24, background: "var(--bg-elev)", border: "1px solid var(--border)", borderRadius: 14 }}>
+                <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1, color: "#FAFAFA" }}>{s.n}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 6, marginBottom: 12 }}>{s.unit}</div>
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: "#A1A1AA" }}>{s.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Comparison matrix ───────────────────────────────────────── */}
+      <section style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div style={{ maxWidth: 720, marginBottom: 40 }}>
+            <Eyebrow>The honest comparison</Eyebrow>
+            <H2>Receipts, not marketing.</H2>
+            <Lead>
+              If a cell is wrong, file an issue with a citation. We keep this matrix honest because the
+              alternative is embarrassing. Last verified April 2026.
+            </Lead>
+          </div>
+          <div
+            style={{
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 16,
+              overflow: "auto",
+              background: "rgba(10,10,15,0.4)",
+            }}
+          >
+            <table className="agdam-table">
+              <thead>
+                <tr>
+                  <th style={{ minWidth: 240 }}>Capability</th>
+                  <th className="agdam-us-col" style={{ color: "#FAFAFA" }}>Agdam Bagdam</th>
+                  <th>VWO</th>
+                  <th>Optimizely</th>
+                  <th>LaunchDarkly</th>
+                  <th>Statsig</th>
+                  <th>Eppo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((r) => (
+                  <tr key={r.feature}>
+                    <td style={{ color: "#E5E7EB", fontWeight: 500 }}>{r.feature}</td>
+                    <td className="agdam-us-col"><CellGlyph v={r.us} /></td>
+                    <td><CellGlyph v={r.vwo} /></td>
+                    <td><CellGlyph v={r.optim} /></td>
+                    <td><CellGlyph v={r.ld} /></td>
+                    <td><CellGlyph v={r.statsig} /></td>
+                    <td><CellGlyph v={r.eppo} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 18, fontFamily: "var(--font-mono)", fontSize: 11, color: "#71717A" }}>
+            <span><span style={{ color: "#10B981" }}>✓</span> supported</span>
+            <span>— not supported</span>
+            <span><span style={{ color: "#F59E0B" }}>$$$</span> paid tier only</span>
+            <span>partial = workaround required</span>
+            <span><span style={{ color: "#A78BFA" }}>soon</span> on roadmap</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Statistical rigor ───────────────────────────────────────── */}
+      <section style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 40 }}>
+            <div style={{ maxWidth: 720 }}>
+              <Eyebrow>Statistical rigor</Eyebrow>
+              <H2>
+                The math is public.
+                <br />
+                <span className="agdam-gradient-text">So is the proof.</span>
+              </H2>
+              <Lead>
+                Most A/B tools hide their assumptions behind NDAs. We ship a 10,000-trial Monte Carlo
+                harness that verifies Type I error, SRM false-positive rates, and CUPED variance reduction
+                on every pull request. Reproduce it locally:
+              </Lead>
+            </div>
+            <div
               style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
-                borderRadius: 12,
-                padding: 22,
-                textDecoration: "none",
-                color: C.char,
-                display: "block",
+                background: "#000",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 14,
+                overflow: "hidden",
+                maxWidth: 900,
               }}
             >
-              <div style={{ fontFamily: Mf, fontSize: 12, color: C.sage, fontWeight: 700, letterSpacing: 1 }}>
-                {x.title}
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 12, fontFamily: "var(--font-mono)", color: "#71717A", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ width: 11, height: 11, borderRadius: 9999, background: "#EF4444" }} />
+                  <div style={{ width: 11, height: 11, borderRadius: 9999, background: "#F59E0B" }} />
+                  <div style={{ width: 11, height: 11, borderRadius: 9999, background: "#10B981" }} />
+                </div>
+                <span style={{ marginLeft: 12 }}>~/agdambagdam$</span>
               </div>
-              <div style={{ fontFamily: Bf, fontSize: 14, color: C.body, marginTop: 8, lineHeight: 1.55 }}>
-                {x.body}
-              </div>
-            </a>
-          ))}
+              <pre style={{ margin: 0, padding: 22, fontSize: 13, lineHeight: 1.7, fontFamily: "var(--font-mono)", color: "#E5E7EB", overflowX: "auto" }}>
+                <code>
+                  <span style={{ color: "#71717A" }}># Clone, install, prove our stats are correct</span>{"\n"}
+                  <span style={{ color: "#F472B6" }}>$</span> git clone <span style={{ color: "#A5E3A5" }}>github.com/balabommablock-cpu/agdambagdam</span>{"\n"}
+                  <span style={{ color: "#F472B6" }}>$</span> cd agdambagdam && npm install{"\n"}
+                  <span style={{ color: "#F472B6" }}>$</span> npx tsx packages/stats/benchmarks/monte-carlo.ts --seed <span style={{ color: "#FBBF77" }}>42</span>{"\n\n"}
+                  <span style={{ color: "#71717A" }}># Output (2026-04-16, seed=42, 10,000 trials):</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> Frequentist z-test — reference parity          <span style={{ color: "#71717A" }}>0.1529</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> Frequentist z-test — Type I error under H₀    <span style={{ color: "#71717A" }}>0.0484</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> Sequential (O'Brien-Fleming) — Type I × 4      <span style={{ color: "#71717A" }}>0.0377</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> Sequential (Pocock) — Type I × 4               <span style={{ color: "#71717A" }}>0.0347</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> SRM detector — Type I under 50/50               <span style={{ color: "#71717A" }}>0.0116</span>{"\n"}
+                  <span style={{ color: "#10B981" }}>{"  ✓"}</span> CUPED empirical variance reduction (ρ=0.7)      <span style={{ color: "#71717A" }}>0.4863</span>{"\n\n"}
+                  <span style={{ color: "#10B981" }}>All 6 suites passed</span>
+                </code>
+              </pre>
+            </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <a href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/BENCHMARKS.md" target="_blank" rel="noopener" className="agdam-btn agdam-btn-primary">
+                Read BENCHMARKS.md
+              </a>
+              <a href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/packages/stats/benchmarks/scipy_reference.py" target="_blank" rel="noopener" className="agdam-btn agdam-btn-secondary">
+                SciPy parity
+              </a>
+              <a href="https://github.com/balabommablock-cpu/agdambagdam/blob/main/packages/stats/benchmarks/r_reference.R" target="_blank" rel="noopener" className="agdam-btn agdam-btn-secondary">
+                gsDesign (R) parity
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
-      <section style={{ background: C.char, color: C.cream }}>
-        <div style={{ ...sectionStyle, padding: "80px 24px", textAlign: "center" }}>
-          <div style={{ ...eyebrowStyle, color: C.mustard }}>SHIP FIRST, LICENSE LATER</div>
-          <h2 style={{ ...h2Style, color: C.cream }}>
-            Your competitor just paid $75K for what you can use free.
-          </h2>
-          <p style={{ fontFamily: Bf, fontSize: 17, color: "#D9D0BF", marginTop: 18, maxWidth: 640, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
-            Fork the repo, star it, run a test this afternoon. If it doesn't make the paid tools look absurd,
-            open an issue and tell us why.
-          </p>
-          <div style={{ marginTop: 36, display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center" }}>
-            <Link
-              href="/agdambagdam/app"
-              style={{ ...btnPrimaryStyle, background: C.cream, color: C.char }}
+      {/* ── Self-host ───────────────────────────────────────────────── */}
+      <section style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" }} className="agdam-grid-cols-3">
+            <div>
+              <Eyebrow>Self-host in 3 minutes</Eyebrow>
+              <H2>Your data. Your VPC. Your call.</H2>
+              <Lead>
+                Enterprises can't have their experimentation stream leaving the network. Good news: the
+                entire stack ships as Docker Compose. Postgres, API server, dashboard — one command.
+              </Lead>
+              <div style={{ marginTop: 28, display: "grid", gap: 12 }}>
+                {[
+                  "Zero egress — events never leave the box",
+                  "Runs anywhere Docker runs: laptop → K8s",
+                  "Immutable audit log on every mutation, queryable SQL",
+                  "MIT license — fork it, embed it, sell it",
+                ].map((line) => (
+                  <div key={line} style={{ display: "flex", gap: 12, alignItems: "flex-start", fontSize: 14, lineHeight: 1.55, color: "#D4D4D8" }}>
+                    <span style={{ color: "#10B981", fontFamily: "var(--font-mono)", fontWeight: 700, paddingTop: 2 }}>✓</span>
+                    <span>{line}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#000",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 14,
+                overflow: "hidden",
+              }}
             >
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 12, fontFamily: "var(--font-mono)", color: "#71717A" }}>
+                docker-compose.yml
+              </div>
+              <pre style={{ margin: 0, padding: 22, fontSize: 13, lineHeight: 1.7, fontFamily: "var(--font-mono)", color: "#E5E7EB" }}>
+                <code>
+                  <span style={{ color: "#F472B6" }}>$</span> git clone <span style={{ color: "#A5E3A5" }}>github.com/.../agdambagdam</span>{"\n"}
+                  <span style={{ color: "#F472B6" }}>$</span> cd agdambagdam{"\n"}
+                  <span style={{ color: "#F472B6" }}>$</span> docker-compose up -d{"\n\n"}
+                  <span style={{ color: "#71717A" }}># Postgres ready</span>{"\n"}
+                  <span style={{ color: "#71717A" }}># API       → :3456</span>{"\n"}
+                  <span style={{ color: "#71717A" }}># Dashboard → :3457</span>{"\n\n"}
+                  <span style={{ color: "#10B981" }}>→ paste the printed key, done.</span>
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Trust grid ──────────────────────────────────────────────── */}
+      <section style={{ ...SECTION_PAD, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={CONTAINER}>
+          <div style={{ maxWidth: 720, marginBottom: 40 }}>
+            <Eyebrow>Trust, not claims</Eyebrow>
+            <H2>
+              Every claim is a link to a
+              <br />
+              <span className="agdam-gradient-text">committed artifact.</span>
+            </H2>
+          </div>
+          <div
+            className="agdam-grid-cols-3"
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}
+          >
+            {TRUST_LINKS.map((x) => (
+              <a
+                key={x.title}
+                href={x.href}
+                target="_blank"
+                rel="noopener"
+                className="agdam-card"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: 10 }}>
+                  {x.title}
+                </div>
+                <div style={{ fontSize: 14, color: "#D4D4D8", lineHeight: 1.55 }}>{x.body}</div>
+                <div style={{ marginTop: 14, fontSize: 12, color: "#71717A", display: "flex", alignItems: "center", gap: 6 }}>
+                  View on GitHub
+                  <span>↗</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ───────────────────────────────────────────────── */}
+      <section style={{ position: "relative", padding: "120px 0 140px", borderTop: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+          <div className="agdam-orb" style={{ background: "#6366F1", width: 520, height: 520, top: -100, left: "50%", transform: "translateX(-50%)", opacity: 0.4 }} />
+          <div className="agdam-noise" />
+        </div>
+        <div style={{ ...CONTAINER, textAlign: "center", position: "relative", zIndex: 2 }}>
+          <Eyebrow>Ship first, license later</Eyebrow>
+          <h2 style={{ fontSize: "clamp(40px, 5.5vw, 72px)", fontWeight: 800, lineHeight: 1.02, letterSpacing: "-0.03em", margin: 0, maxWidth: 900, marginLeft: "auto", marginRight: "auto", color: "#FAFAFA" }}>
+            Your competitor just paid <span className="agdam-gradient-text">$75K</span>
+            <br />
+            for what you can use free.
+          </h2>
+          <p style={{ fontSize: 18, color: "#A1A1AA", marginTop: 24, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
+            Fork the repo, star it, run a test this afternoon. If it doesn't make the paid tools look
+            absurd, open an issue and tell us why.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 36 }}>
+            <Link href="/agdambagdam/app" className="agdam-btn agdam-btn-primary" style={{ padding: "14px 22px", fontSize: 15 }}>
               Open dashboard →
             </Link>
-            <a
-              href="https://github.com/balabommablock-cpu/agdambagdam"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...btnSecondaryStyle, borderColor: C.cream, color: C.cream }}
-            >
+            <a href="https://github.com/balabommablock-cpu/agdambagdam" target="_blank" rel="noopener" className="agdam-btn agdam-btn-secondary" style={{ padding: "14px 22px", fontSize: 15 }}>
               Star on GitHub
             </a>
           </div>
-          <div style={{ marginTop: 32, fontFamily: Mf, fontSize: 12, color: "#8A8A8A", letterSpacing: 1 }}>
-            MIT LICENSED · ZERO VENDOR LOCK-IN · MADE IN INDIA
-          </div>
         </div>
       </section>
+
+      {/* ── Footer ──────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "56px 0 40px" }}>
+        <div style={CONTAINER}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 32 }} className="agdam-grid-cols-4">
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: "linear-gradient(135deg, #6366F1, #EC4899)" }} />
+                <span style={{ fontWeight: 700, fontSize: 15 }}>Agdam Bagdam</span>
+              </div>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: "#71717A", margin: 0, maxWidth: 280 }}>
+                Open-source A/B testing and feature flags. MIT licensed. Self-hostable. Zero data egress.
+              </p>
+            </div>
+            <FooterCol
+              title="Product"
+              links={[
+                { label: "Dashboard", href: "/agdambagdam/app" },
+                { label: "Docs", href: "/agdambagdam/docs" },
+                { label: "Changelog", href: "https://github.com/balabommablock-cpu/agdambagdam/releases" },
+                { label: "Status", href: "#" },
+              ]}
+            />
+            <FooterCol
+              title="Developers"
+              links={[
+                { label: "Quickstart", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/QUICKSTART.md" },
+                { label: "Examples", href: "https://github.com/balabommablock-cpu/agdambagdam/tree/main/examples" },
+                { label: "npx scaffolder", href: "https://github.com/balabommablock-cpu/agdambagdam/tree/main/packages/create-agdambagdam" },
+                { label: "Architecture", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/ARCHITECTURE.md" },
+              ]}
+            />
+            <FooterCol
+              title="Trust"
+              links={[
+                { label: "Security", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/SECURITY.md" },
+                { label: "Benchmarks", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/BENCHMARKS.md" },
+                { label: "Features matrix", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/FEATURES.md" },
+                { label: "Troubleshooting", href: "https://github.com/balabommablock-cpu/agdambagdam/blob/main/docs/troubleshooting.md" },
+              ]}
+            />
+          </div>
+          <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#52525B", fontFamily: "var(--font-mono)" }}>
+            <span>© 2026 · MIT LICENSED · MADE IN INDIA</span>
+            <span>
+              A product of{" "}
+              <Link href="/" style={{ color: "#A1A1AA", textDecoration: "none" }}>
+                boredfolio.
+              </Link>
+            </span>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
 
-// ── Table helpers ────────────────────────────────────────────────────────
-
-function thStyle(first: boolean = false): React.CSSProperties {
-  return {
-    padding: "14px 16px",
-    textAlign: first ? "left" : "center",
-    fontFamily: Bf,
-    fontSize: 12,
-    fontWeight: 700,
-    color: C.char,
-    letterSpacing: 0.5,
-    textTransform: "uppercase" as const,
-    borderBottom: `2px solid ${C.border}`,
-    whiteSpace: "nowrap" as const,
-  };
-}
-
-function tdStyle(first: boolean = false): React.CSSProperties {
-  return {
-    padding: "14px 16px",
-    textAlign: first ? "left" : "center",
-    color: C.body,
-    borderBottom: `1px solid ${C.border}`,
-  };
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
+        {title}
+      </div>
+      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 10 }}>
+        {links.map((l) => {
+          const isExt = l.href.startsWith("http");
+          const LinkTag: any = isExt ? "a" : Link;
+          const extra = isExt ? { target: "_blank", rel: "noopener" } : {};
+          return (
+            <li key={l.label}>
+              <LinkTag href={l.href} {...extra} style={{ fontSize: 13, color: "#A1A1AA", textDecoration: "none", transition: "color 0.15s" }}>
+                {l.label}
+              </LinkTag>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
